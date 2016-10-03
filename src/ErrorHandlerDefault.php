@@ -53,14 +53,14 @@ class ErrorHandlerDefault
         foreach ($this->handlers as $method => $types) {
             foreach ($types as $type) {
                 if (stripos($accept, $type) !== false) {
-                    $this->$method($statusCode, $message);
+                    call_user_func(__CLASS__.'::'.$method, $statusCode, $message);
 
                     return $response->withHeader('Content-Type', $type);
                 }
             }
         }
 
-        $this->html($statusCode, $message);
+        static::html($statusCode, $message);
 
         return $response->withHeader('Content-Type', 'text/html');
     }
@@ -71,7 +71,7 @@ class ErrorHandlerDefault
      * @param int    $statusCode
      * @param string $message
      */
-    private function plain($statusCode, $message)
+    public static function plain($statusCode, $message)
     {
         echo sprintf("Error %s\n%s", $statusCode, $message);
     }
@@ -82,7 +82,7 @@ class ErrorHandlerDefault
      * @param int    $statusCode
      * @param string $message
      */
-    private function svg($statusCode, $message)
+    public static function svg($statusCode, $message)
     {
         echo <<<EOT
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50" viewBox="0 0 200 50">
@@ -99,7 +99,7 @@ EOT;
      * @param int    $statusCode
      * @param string $message
      */
-    private function html($statusCode, $message)
+    public static function html($statusCode, $message)
     {
         echo <<<EOT
 <!DOCTYPE html>
@@ -124,7 +124,7 @@ EOT;
      * @param int    $statusCode
      * @param string $message
      */
-    private function json($statusCode, $message)
+    public static function json($statusCode, $message)
     {
         $output = ['error' => $statusCode];
 
@@ -141,7 +141,7 @@ EOT;
      * @param int    $statusCode
      * @param string $message
      */
-    private function xml($statusCode, $message)
+    public static function xml($statusCode, $message)
     {
         echo <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
@@ -158,9 +158,9 @@ EOT;
      * @param int    $statusCode
      * @param string $message
      */
-    private function jpeg($statusCode, $message)
+    public static function jpeg($statusCode, $message)
     {
-        $image = $this->createImage($statusCode, $message);
+        $image = self::createImage($statusCode, $message);
 
         imagejpeg($image);
     }
@@ -171,9 +171,9 @@ EOT;
      * @param int    $statusCode
      * @param string $message
      */
-    private function gif($statusCode, $message)
+    public static function gif($statusCode, $message)
     {
-        $image = $this->createImage($statusCode, $message);
+        $image = self::createImage($statusCode, $message);
 
         imagegif($image);
     }
@@ -184,9 +184,9 @@ EOT;
      * @param int    $statusCode
      * @param string $message
      */
-    private function png($statusCode, $message)
+    public static function png($statusCode, $message)
     {
-        $image = $this->createImage($statusCode, $message);
+        $image = self::createImage($statusCode, $message);
 
         imagepng($image);
     }
@@ -199,7 +199,7 @@ EOT;
      *
      * @return resource
      */
-    private function createImage($statusCode, $message)
+    private static function createImage($statusCode, $message)
     {
         $size = 200;
         $image = imagecreatetruecolor($size, $size);

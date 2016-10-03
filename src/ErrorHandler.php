@@ -132,7 +132,7 @@ class ErrorHandler implements ServerMiddlewareInterface
      */
     private function handleError(ServerRequestInterface $request, $statusCode, $exception)
     {
-        $arguments = array_merge(func_get_args(), $this->arguments);
+        $arguments = array_merge([$request, $statusCode, $exception], $this->arguments);
         $callable = Utils\CallableHandler::resolve($this->handler, $arguments);
 
         return Utils\CallableHandler::execute($callable, $arguments);
