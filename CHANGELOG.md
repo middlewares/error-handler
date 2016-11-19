@@ -8,11 +8,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-* Changed the handler function signature to `function(ServerRequestInterface $request)`.
-* The error info is passed to the handler using the request attribute `error`.
-* New option `attribute()` to change the attribute name used to pass the error info to the handler.
+* Changed the handler signature to `function(ServerRequestInterface $request)`.
+* The error info is passed to the handler using an array stored in the request attribute `error`.
 
-First version
+### Added
+
+* New option `attribute()` to change the attribute name used to pass the error info to the handler.
 
 ## 0.1.0 - 2016-10-03
 
