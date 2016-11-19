@@ -32,6 +32,11 @@ class ErrorHandler implements ServerMiddlewareInterface
     private $catchExceptions = false;
 
     /**
+     * @var string The attribute name
+     */
+    private $attribute = 'error';
+
+    /**
      * Constructor.
      *
      * @param callable|string|null $handler
@@ -65,6 +70,20 @@ class ErrorHandler implements ServerMiddlewareInterface
     public function statusCode(callable $statusCodeValidator)
     {
         $this->statusCodeValidator = $statusCodeValidator;
+
+        return $this;
+    }
+
+    /**
+     * Set the attribute name to store the error info.
+     *
+     * @param string $attribute
+     *
+     * @return self
+     */
+    public function attribute($attribute)
+    {
+        $this->attribute = $attribute;
 
         return $this;
     }
@@ -132,7 +151,11 @@ class ErrorHandler implements ServerMiddlewareInterface
      */
     private function handleError(ServerRequestInterface $request, $statusCode, $exception)
     {
-        $arguments = array_merge([$request, $statusCode, $exception], $this->arguments);
+        $request = $request->withAttribute($this->attribute, [
+            'status_code' => $statusCode,
+            'exception' => $exception,
+        ]);
+        $arguments = array_merge([$request], $this->arguments);
         $callable = Utils\CallableHandler::resolve($this->handler, $arguments);
 
         return Utils\CallableHandler::execute($callable, $arguments);

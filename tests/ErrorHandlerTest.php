@@ -13,11 +13,29 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
     public function testError()
     {
         $response = (new Dispatcher([
-            new ErrorHandler(function ($request, $statusCode) {
+            new ErrorHandler(function ($request) {
                 echo 'Page not found';
 
-                return (new Response())->withStatus($statusCode);
+                return (new Response())->withStatus($request->getAttribute('error')['status_code']);
             }),
+            function () {
+                return (new Response())->withStatus(404);
+            },
+        ]))->dispatch(new ServerRequest());
+
+        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
+        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertEquals('Page not found', (string) $response->getBody());
+    }
+
+    public function testAttribute()
+    {
+        $response = (new Dispatcher([
+            (new ErrorHandler(function ($request) {
+                echo 'Page not found';
+
+                return (new Response())->withStatus($request->getAttribute('foo')['status_code']);
+            }))->attribute('foo'),
             function () {
                 return (new Response())->withStatus(404);
             },
@@ -33,10 +51,10 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $exception = new Exception('Error Processing Request');
 
         $response = (new Dispatcher([
-            (new ErrorHandler(function ($request, $statusCode, $exception) {
-                echo $exception;
+            (new ErrorHandler(function ($request) {
+                echo $request->getAttribute('error')['exception'];
 
-                return (new Response())->withStatus($statusCode);
+                return (new Response())->withStatus($request->getAttribute('error')['status_code']);
             }))->catchExceptions(),
             function ($request) use ($exception) {
                 echo 'not showed text';
@@ -99,8 +117,8 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
     public function testArguments()
     {
         $response = (new Dispatcher([
-            (new ErrorHandler(function ($request, $statusCode, $exception, $message) {
-                $response = (new Response())->withStatus($statusCode);
+            (new ErrorHandler(function ($request, $message) {
+                $response = (new Response())->withStatus($request->getAttribute('error')['status_code']);
                 $response->getBody()->write($message);
 
                 return $response;

@@ -44,8 +44,10 @@ class ErrorHandlerDefault
      *
      * @return ResponseInterface
      */
-    public function __invoke(ServerRequestInterface $request, $statusCode, $exception)
+    public function __invoke(ServerRequestInterface $request)
     {
+        $statusCode = $request->getAttribute('error')['status_code'];
+        $exception = $request->getAttribute('error')['exception'];
         $accept = $request->getHeaderLine('Accept');
         $message = $exception ? $exception->getMessage() : '';
         $response = Utils\Factory::createResponse($statusCode);

@@ -44,15 +44,18 @@ Assign the callable used to handle the error. It can be a callable or a string w
 ```php
 use Psr\Http\Message\ServerRequestInterface;
 
-$handler = function (ServerRequestInterface $request, $statusCode, $exception) {
+$handler = function (ServerRequestInterface $request) {
+    //Get the error info using the "error" attribute
+    $error = $request->getAttribute('error');
+
     //Any output is captured and added to the body stream
-    if ($exception) {
-        echo $exception->getMessage();
+    if ($error['exception']) {
+        echo $error['exception']->getMessage();
     } else {
-        echo sprintf('Oops, a "%s" erro ocurried', $statusCode);
+        echo sprintf('Oops, a "%s" erro ocurried', $error['status_code']);
     }
 
-    return (new Response())->withStatus($statusCode);
+    return (new Response())->withStatus($error['status_code']);
 };
 
 $dispatcher = new Dispatcher([
@@ -81,19 +84,24 @@ $dispatcher = new Dispatcher([
 ]);
 ```
 
+#### `attribute(string $attribute)`
+
+The attribute name used to store the array with the error info in the server request. By default is `error`.
+
 #### `arguments(...$args)`
 
 Extra arguments to pass to the error handler. This is useful to inject, for example a logger:
 
 ```php
-$handler = function (ServerRequestInterface $request, $statusCode, $exception, $logger) {
-    $message = sprintf('Oops, a "%s" erro ocurried', $statusCode);
+$handler = function (ServerRequestInterface $request, $logger) {
+    $error = $request->getAttribute('error');
+    $message = sprintf('Oops, a "%s" erro ocurried', $error['status_code']);
 
     //Log the error
     $logger->error($message);
 
     //Build the response
-    $response = (new Response())->withStatus($statusCode);
+    $response = (new Response())->withStatus($error['status_code']);
     $response->getBody()->write($message);
 
     return $response;
