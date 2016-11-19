@@ -4,8 +4,6 @@ namespace Middlewares;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Exception;
-use Throwable;
 
 class ErrorHandlerDefault
 {
@@ -44,23 +42,22 @@ class ErrorHandlerDefault
      */
     public function __invoke(ServerRequestInterface $request)
     {
-        $statusCode = $request->getAttribute('error')['status_code'];
-        $exception = $request->getAttribute('error')['exception'];
+        $error = $request->getAttribute('error');
         $accept = $request->getHeaderLine('Accept');
-        $message = $exception ? $exception->getMessage() : '';
-        $response = Utils\Factory::createResponse($statusCode);
+        $message = $error['exception'] ? $error['exception']->getMessage() : '';
+        $response = Utils\Factory::createResponse($error['status_code']);
 
         foreach ($this->handlers as $method => $types) {
             foreach ($types as $type) {
                 if (stripos($accept, $type) !== false) {
-                    call_user_func(__CLASS__.'::'.$method, $statusCode, $message);
+                    call_user_func(__CLASS__.'::'.$method, $error['status_code'], $message);
 
                     return $response->withHeader('Content-Type', $type);
                 }
             }
         }
 
-        static::html($statusCode, $message);
+        static::html($error['status_code'], $message);
 
         return $response->withHeader('Content-Type', 'text/html');
     }
