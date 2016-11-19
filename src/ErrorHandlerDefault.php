@@ -39,8 +39,6 @@ class ErrorHandlerDefault
      * Execute the error handler.
      *
      * @param ServerRequestInterface   $request
-     * @param int                      $statusCode
-     * @param Exception|Throwable|null $exception
      *
      * @return ResponseInterface
      */
