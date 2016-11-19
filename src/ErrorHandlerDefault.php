@@ -36,7 +36,7 @@ class ErrorHandlerDefault
     /**
      * Execute the error handler.
      *
-     * @param ServerRequestInterface   $request
+     * @param ServerRequestInterface $request
      *
      * @return ResponseInterface
      */
