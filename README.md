@@ -1,15 +1,13 @@
 # middlewares/error-handler
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
-[![Software License][ico-license]](LICENSE.md)
+[![Software License][ico-license]](LICENSE)
 [![Build Status][ico-travis]][link-travis]
 [![Quality Score][ico-scrutinizer]][link-scrutinizer]
 [![Total Downloads][ico-downloads]][link-downloads]
 [![SensioLabs Insight][ico-sensiolabs]][link-sensiolabs]
 
 Middleware to execute a handler if the response returned by the next middlewares has any error (status code 400-599). It can also catch the exceptions.
-
-**Note:** This middleware is intended for server side only
 
 ## Requirements
 
