@@ -4,25 +4,25 @@ namespace Middlewares\Tests;
 
 use Middlewares\ErrorHandler;
 use Middlewares\Utils\Dispatcher;
-use Middlewares\Utils\CallableMiddleware;
-use Zend\Diactoros\ServerRequest;
-use Zend\Diactoros\Response;
+use Middlewares\Utils\Factory;
 use Exception;
 
 class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 {
     public function testError()
     {
+        $request = Factory::createServerRequest();
+
         $response = (new Dispatcher([
             new ErrorHandler(function ($request) {
                 echo 'Page not found';
 
-                return (new Response())->withStatus($request->getAttribute('error')['status_code']);
+                return Factory::createResponse($request->getAttribute('error')['status_code']);
             }),
-            new CallableMiddleware(function () {
-                return (new Response())->withStatus(404);
-            }),
-        ]))->dispatch(new ServerRequest());
+            function () {
+                return Factory::createResponse(404);
+            },
+        ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(404, $response->getStatusCode());
@@ -31,16 +31,18 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testAttribute()
     {
+        $request = Factory::createServerRequest();
+
         $response = (new Dispatcher([
             (new ErrorHandler(function ($request) {
                 echo 'Page not found';
 
-                return (new Response())->withStatus($request->getAttribute('foo')['status_code']);
+                return Factory::createResponse($request->getAttribute('foo')['status_code']);
             }))->attribute('foo'),
-            new CallableMiddleware(function () {
-                return (new Response())->withStatus(404);
-            }),
-        ]))->dispatch(new ServerRequest());
+            function () {
+                return Factory::createResponse(404);
+            },
+        ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(404, $response->getStatusCode());
@@ -50,18 +52,19 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
     public function testException()
     {
         $exception = new Exception('Error Processing Request');
+        $request = Factory::createServerRequest();
 
         $response = (new Dispatcher([
             (new ErrorHandler(function ($request) {
                 echo $request->getAttribute('error')['exception'];
 
-                return (new Response())->withStatus($request->getAttribute('error')['status_code']);
+                return Factory::createResponse($request->getAttribute('error')['status_code']);
             }))->catchExceptions(),
-            new CallableMiddleware(function ($request) use ($exception) {
+            function ($request) use ($exception) {
                 echo 'not showed text';
                 throw $exception;
-            }),
-        ]))->dispatch(new ServerRequest());
+            },
+        ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
@@ -88,12 +91,13 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
      */
     public function testFormats($type)
     {
-        $request = (new ServerRequest())->withHeader('Accept', $type);
+        $request = Factory::createServerRequest()->withHeader('Accept', $type);
+
         $response = (new Dispatcher([
             new ErrorHandler(),
-            new CallableMiddleware(function () {
-                return (new Response())->withStatus(500);
-            }),
+            function () {
+                return Factory::createResponse(500);
+            },
         ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
@@ -103,12 +107,14 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testDefaultFormat()
     {
+        $request = Factory::createServerRequest();
+
         $response = (new Dispatcher([
             new ErrorHandler(),
-            new CallableMiddleware(function () {
-                return (new Response())->withStatus(500);
-            }),
-        ]))->dispatch(new ServerRequest());
+            function () {
+                return Factory::createResponse(500);
+            },
+        ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
@@ -117,17 +123,18 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testArguments()
     {
+        $request = Factory::createServerRequest();
+
         $response = (new Dispatcher([
             (new ErrorHandler(function ($request, $message) {
-                $response = (new Response())->withStatus($request->getAttribute('error')['status_code']);
-                $response->getBody()->write($message);
+                echo $message;
 
-                return $response;
+                return Factory::createResponse($request->getAttribute('error')['status_code']);
             }))->arguments('Hello world'),
-            new CallableMiddleware(function () {
-                return (new Response())->withStatus(500);
-            }),
-        ]))->dispatch(new ServerRequest());
+            function () {
+                return Factory::createResponse(500);
+            },
+        ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
@@ -140,28 +147,28 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             return $code === 404;
         };
 
+        $request = Factory::createServerRequest();
+
         $response = (new Dispatcher([
             (new ErrorHandler())->statusCode($validator),
-            new CallableMiddleware(function () {
-                $response = (new Response())->withStatus(500);
-                $response->getBody()->write('Content');
+            function () {
+                echo 'Content';
 
-                return $response;
-            }),
-        ]))->dispatch(new ServerRequest());
+                return Factory::createResponse(500);
+            },
+        ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals('Content', (string) $response->getBody());
 
         $response = (new Dispatcher([
             (new ErrorHandler())->statusCode($validator),
-            new CallableMiddleware(function () {
-                $response = (new Response())->withStatus(404);
-                $response->getBody()->write('Content');
+            function () {
+                echo 'Content';
 
-                return $response;
-            }),
-        ]))->dispatch(new ServerRequest());
+                return Factory::createResponse(404);
+            },
+        ]))->dispatch($request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertNotEquals('Content', (string) $response->getBody());
