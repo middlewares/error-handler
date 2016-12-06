@@ -11,9 +11,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 {
     public function testError()
     {
-        $request = Factory::createServerRequest();
-
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             new ErrorHandler(function ($request) {
                 echo 'Page not found';
 
@@ -22,7 +20,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             function () {
                 return Factory::createResponse(404);
             },
-        ]))->dispatch($request);
+        ]);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(404, $response->getStatusCode());
@@ -31,9 +29,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testAttribute()
     {
-        $request = Factory::createServerRequest();
-
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             (new ErrorHandler(function ($request) {
                 echo 'Page not found';
 
@@ -42,7 +38,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             function () {
                 return Factory::createResponse(404);
             },
-        ]))->dispatch($request);
+        ]);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(404, $response->getStatusCode());
@@ -52,9 +48,8 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
     public function testException()
     {
         $exception = new Exception('Error Processing Request');
-        $request = Factory::createServerRequest();
 
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             (new ErrorHandler(function ($request) {
                 echo $request->getAttribute('error')['exception'];
 
@@ -64,7 +59,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
                 echo 'not showed text';
                 throw $exception;
             },
-        ]))->dispatch($request);
+        ]);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
@@ -93,12 +88,12 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $request = Factory::createServerRequest()->withHeader('Accept', $type);
 
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             new ErrorHandler(),
             function () {
                 return Factory::createResponse(500);
             },
-        ]))->dispatch($request);
+        ], $request);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
@@ -107,14 +102,12 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testDefaultFormat()
     {
-        $request = Factory::createServerRequest();
-
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             new ErrorHandler(),
             function () {
                 return Factory::createResponse(500);
             },
-        ]))->dispatch($request);
+        ]);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
@@ -123,9 +116,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     public function testArguments()
     {
-        $request = Factory::createServerRequest();
-
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             (new ErrorHandler(function ($request, $message) {
                 echo $message;
 
@@ -134,7 +125,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             function () {
                 return Factory::createResponse(500);
             },
-        ]))->dispatch($request);
+        ]);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
@@ -147,28 +138,26 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             return $code === 404;
         };
 
-        $request = Factory::createServerRequest();
-
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             (new ErrorHandler())->statusCode($validator),
             function () {
                 echo 'Content';
 
                 return Factory::createResponse(500);
             },
-        ]))->dispatch($request);
+        ]);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals('Content', (string) $response->getBody());
 
-        $response = (new Dispatcher([
+        $response = Dispatcher::run([
             (new ErrorHandler())->statusCode($validator),
             function () {
                 echo 'Content';
 
                 return Factory::createResponse(404);
             },
-        ]))->dispatch($request);
+        ]);
 
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertNotEquals('Content', (string) $response->getBody());
