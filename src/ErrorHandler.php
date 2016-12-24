@@ -4,12 +4,12 @@ namespace Middlewares;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Interop\Http\Middleware\ServerMiddlewareInterface;
-use Interop\Http\Middleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Interop\Http\ServerMiddleware\DelegateInterface;
 use Exception;
 use Throwable;
 
-class ErrorHandler implements ServerMiddlewareInterface
+class ErrorHandler implements MiddlewareInterface
 {
     /**
      * @var callable|string The handler used
