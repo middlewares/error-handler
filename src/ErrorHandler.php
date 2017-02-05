@@ -2,6 +2,7 @@
 
 namespace Middlewares;
 
+use Middlewares\Utils\CallableResolver\ReflectionResolver;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Interop\Http\ServerMiddleware\MiddlewareInterface;
@@ -155,8 +156,9 @@ class ErrorHandler implements MiddlewareInterface
             'status_code' => $statusCode,
             'exception' => $exception,
         ]);
+
         $arguments = array_merge([$request], $this->arguments);
-        $callable = Utils\CallableHandler::resolve($this->handler, $arguments);
+        $callable = (new ReflectionResolver())->resolve($this->handler, $arguments);
 
         return Utils\CallableHandler::execute($callable, $arguments);
     }
