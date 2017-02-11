@@ -63,7 +63,7 @@ $dispatcher = new Dispatcher([
 $response = $dispatcher->dispatch(new ServerRequest());
 ```
 
-If it's not provided, use [the default](src/ErrorHandlerTest.php) that provides different outputs for different formats.
+If it's not provided, use [the default](src/ErrorHandlerDefault.php) that provides different outputs for different formats.
 
 #### `catchExceptions(true)`
 
