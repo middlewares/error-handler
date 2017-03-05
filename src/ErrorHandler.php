@@ -122,6 +122,8 @@ class ErrorHandler implements MiddlewareInterface
             }
 
             return $response;
+        } catch (HttpErrorException $exception) {
+            return $this->handleError($request, $exception->getCode(), $exception);
         } catch (Throwable $exception) {
             if (!$this->catchExceptions) {
                 throw $exception;

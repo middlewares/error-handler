@@ -3,6 +3,7 @@
 namespace Middlewares\Tests;
 
 use Middlewares\ErrorHandler;
+use Middlewares\HttpErrorException;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use Exception;
@@ -25,6 +26,26 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(404, $response->getStatusCode());
         $this->assertEquals('Page not found', (string) $response->getBody());
+    }
+
+    public function testHttpErrorException()
+    {
+        $response = Dispatcher::run([
+            new ErrorHandler(function ($request) {
+                echo $request->getAttribute('error')['status_code'];
+                echo '-'.$request->getAttribute('error')['exception']->getMessage();
+                echo '-'.$request->getAttribute('error')['exception']->getContext()['foo'];
+
+                return Factory::createResponse($request->getAttribute('error')['status_code']);
+            }),
+            function () {
+                throw HttpErrorException::create(500, ['foo' => 'bar']);
+            },
+        ]);
+
+        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
+        $this->assertEquals(500, $response->getStatusCode());
+        $this->assertEquals('500-Internal Server Error-bar', (string) $response->getBody());
     }
 
     public function testAttribute()
