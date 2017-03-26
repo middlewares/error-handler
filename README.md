@@ -34,7 +34,7 @@ $handler = function (ServerRequestInterface $request) use ($logger) {
     //Get the error info as an instance of Middlewares\HttpErrorException
     $error = $request->getAttribute('error');
 
-    //The error can contains context data that you can use, for example for psr-4 loggin
+    //The error can contains context data that you can use, for example for PSR-3 loggin
     $logger->error("There's an error", $error->getContext());
 
     //Any output is captured and added to the response's body
