@@ -27,7 +27,12 @@ composer require middlewares/error-handler
 
 ```php
 $dispatcher = new Dispatcher([
-	new Middlewares\ErrorHandler()
+    new Middlewares\ErrorHandler(),
+
+    function ($request, $next) {
+        $response = $next($request);
+        return $response->withStatus(404);
+    }
 ]);
 
 $response = $dispatcher->dispatch(new ServerRequest());
@@ -111,6 +116,45 @@ $dispatcher = new Dispatcher([
 ]);
 ```
 
+## The `Middlewares\HttpErrorException`
+
+With `Middlewares\HttpErrorException` you can send context-related data to the error handler. It provides the `setContext(array $data)` and `getContext()` methods to assign and retrieve the error context data that you can use in the error handler. Just have to throw the exception and it will be captured by `ErrorHandler`:
+
+```php
+use Psr\Http\Message\ServerRequestInterface;
+
+$handler = function (ServerRequestInterface $request) use ($logger) {
+    $exception = $request->getAttribute('error')['exception'];
+
+    //Include the data in the log
+    $data = $exception->getContext();
+    $logger->error("There's an error", $data);
+
+    return (new Response())->withStatus($exception->getCode());
+};
+
+$dispatcher = new Dispatcher([
+    new Middlewares\ErrorHandler($handler),
+
+    function ($request, $next) {
+        $user = Session::signup($request);
+
+        if ($user->isNotAllowed()) {
+            //Send an exception adding context data
+            throw Middlewares\HttpErrorException::create(401, [
+                'user' => $user,
+                'request' => $request
+            ]);
+        }
+
+        return $next($request);
+    }
+]);
+
+$response = $dispatcher->dispatch(new ServerRequest());
+```
+
+Note: `Middlewares\HttpErrorException` is captured **always,** `catchExceptions(false)` has not effect here.
 ---
 
 Please see [CHANGELOG](CHANGELOG.md) for more information about recent changes and [CONTRIBUTING](CONTRIBUTING.md) for contributing details.

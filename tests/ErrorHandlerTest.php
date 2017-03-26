@@ -23,7 +23,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(404, $response->getStatusCode());
         $this->assertEquals('Page not found', (string) $response->getBody());
     }
@@ -43,7 +42,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
         $this->assertEquals('500-Internal Server Error-bar', (string) $response->getBody());
     }
@@ -61,7 +59,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(404, $response->getStatusCode());
         $this->assertEquals('Page not found', (string) $response->getBody());
     }
@@ -82,7 +79,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
         $this->assertEquals((string) $exception, (string) $response->getBody());
     }
@@ -116,7 +112,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ], $request);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
         $this->assertEquals($type, $response->getHeaderLine('Content-Type'));
     }
@@ -130,7 +125,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
         $this->assertEquals('text/html', $response->getHeaderLine('Content-Type'));
     }
@@ -148,7 +142,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals(500, $response->getStatusCode());
         $this->assertEquals('Hello world', (string) $response->getBody());
     }
@@ -168,7 +161,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertEquals('Content', (string) $response->getBody());
 
         $response = Dispatcher::run([
@@ -180,7 +172,6 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             },
         ]);
 
-        $this->assertInstanceOf('Psr\\Http\\Message\\ResponseInterface', $response);
         $this->assertNotEquals('Content', (string) $response->getBody());
     }
 }
