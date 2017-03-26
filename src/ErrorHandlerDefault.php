@@ -44,20 +44,19 @@ class ErrorHandlerDefault
     {
         $error = $request->getAttribute('error');
         $accept = $request->getHeaderLine('Accept');
-        $message = $error['exception'] ? $error['exception']->getMessage() : '';
-        $response = Utils\Factory::createResponse($error['status_code']);
+        $response = Utils\Factory::createResponse($error->getCode());
 
         foreach ($this->handlers as $method => $types) {
             foreach ($types as $type) {
                 if (stripos($accept, $type) !== false) {
-                    call_user_func(__CLASS__.'::'.$method, $error['status_code'], $message);
+                    call_user_func(__CLASS__.'::'.$method, $error);
 
                     return $response->withHeader('Content-Type', $type);
                 }
             }
         }
 
-        static::html($error['status_code'], $message);
+        static::html($error);
 
         return $response->withHeader('Content-Type', 'text/html');
     }
@@ -65,26 +64,24 @@ class ErrorHandlerDefault
     /**
      * Output the error as plain text.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      */
-    public static function plain($statusCode, $message)
+    public static function plain(HttpErrorException $error)
     {
-        echo sprintf("Error %s\n%s", $statusCode, $message);
+        echo sprintf("Error %s\n%s", $error->getCode(), $error->getMessage());
     }
 
     /**
      * Output the error as svg image.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      */
-    public static function svg($statusCode, $message)
+    public static function svg(HttpErrorException $error)
     {
         echo <<<EOT
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50" viewBox="0 0 200 50">
-    <text x="20" y="30" font-family="sans-serif" title="{$message}">
-        Error {$statusCode}
+    <text x="20" y="30" font-family="sans-serif" title="{$error->getMessage()}">
+        Error {$error->getCode()}
     </text>
 </svg>
 EOT;
@@ -93,23 +90,22 @@ EOT;
     /**
      * Output the error as html.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      */
-    public static function html($statusCode, $message)
+    public static function html(HttpErrorException $error)
     {
         echo <<<EOT
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Error {$statusCode}</title>
+    <title>Error {$error->getCode()}</title>
     <style>html{font-family: sans-serif;}</style>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-    <h1>Error {$statusCode}</h1>
-    {$message}
+    <h1>Error {$error->getCode()}</h1>
+    {$error->getMessage()}
 </body>
 </html>
 EOT;
@@ -118,33 +114,30 @@ EOT;
     /**
      * Output the error as json.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      */
-    public static function json($statusCode, $message)
+    public static function json(HttpErrorException $error)
     {
-        $output = ['error' => $statusCode];
-
-        if (!empty($message)) {
-            $output['message'] = $message;
-        }
-
-        echo json_encode($output);
+        echo json_encode([
+            'error' => [
+                'code' => $error->getCode(),
+                'message' => $error->getMessage()
+            ]
+        ]);
     }
 
     /**
      * Output the error as xml.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      */
-    public static function xml($statusCode, $message)
+    public static function xml(HttpErrorException $error)
     {
         echo <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <error>
-    <code>{$statusCode}</code>
-    <message>{$message}</message>
+    <code>{$error->getCode()}</code>
+    <message>{$error->getMessage()}</message>
 </error>
 EOT;
     }
@@ -152,12 +145,11 @@ EOT;
     /**
      * Output the error as jpeg.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      */
-    public static function jpeg($statusCode, $message)
+    public static function jpeg(HttpErrorException $error)
     {
-        $image = self::createImage($statusCode, $message);
+        $image = self::createImage($error);
 
         imagejpeg($image);
     }
@@ -165,12 +157,11 @@ EOT;
     /**
      * Output the error as gif.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      */
-    public static function gif($statusCode, $message)
+    public static function gif(HttpErrorException $error)
     {
-        $image = self::createImage($statusCode, $message);
+        $image = self::createImage($error);
 
         imagegif($image);
     }
@@ -178,12 +169,11 @@ EOT;
     /**
      * Output the error as png.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      */
-    public static function png($statusCode, $message)
+    public static function png(HttpErrorException $error)
     {
-        $image = self::createImage($statusCode, $message);
+        $image = self::createImage($error);
 
         imagepng($image);
     }
@@ -191,19 +181,18 @@ EOT;
     /**
      * Creates a image resource with the error text.
      *
-     * @param int    $statusCode
-     * @param string $message
+     * @param HttpErrorException $error
      *
      * @return resource
      */
-    private static function createImage($statusCode, $message)
+    private static function createImage(HttpErrorException $error)
     {
         $size = 200;
         $image = imagecreatetruecolor($size, $size);
         $textColor = imagecolorallocate($image, 255, 255, 255);
-        imagestring($image, 5, 10, 10, "Error {$statusCode}", $textColor);
+        imagestring($image, 5, 10, 10, "Error {$error->getCode()}", $textColor);
 
-        foreach (str_split($message, intval($size / 10)) as $line => $text) {
+        foreach (str_split($error->getMessage(), intval($size / 10)) as $line => $text) {
             imagestring($image, 5, 10, ($line * 18) + 28, $text, $textColor);
         }
 

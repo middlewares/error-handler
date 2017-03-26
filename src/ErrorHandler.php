@@ -118,24 +118,25 @@ class ErrorHandler implements MiddlewareInterface
             $response = $delegate->process($request);
 
             if ($this->isError($response->getStatusCode())) {
-                return $this->handleError($request, $response->getStatusCode(), null);
+                $exception = new HttpErrorException($response->getReasonPhrase(), $response->getStatusCode());
+                return $this->handleError($request, $exception);
             }
 
             return $response;
         } catch (HttpErrorException $exception) {
-            return $this->handleError($request, $exception->getCode(), $exception);
+            return $this->handleError($request, $exception);
         } catch (Throwable $exception) {
             if (!$this->catchExceptions) {
                 throw $exception;
             }
 
-            return $this->handleError($request, 500, $exception);
+            return $this->handleError($request, HttpErrorException::create(500, [], $exception));
         } catch (Exception $exception) {
             if (!$this->catchExceptions) {
                 throw $exception;
             }
 
-            return $this->handleError($request, 500, $exception);
+            return $this->handleError($request, HttpErrorException::create(500, [], $exception));
         } finally {
             while (ob_get_level() >= $level) {
                 ob_end_clean();
@@ -146,19 +147,14 @@ class ErrorHandler implements MiddlewareInterface
     /**
      * Execute the error handler.
      *
-     * @param ServerRequestInterface   $request
-     * @param int                      $statusCode
-     * @param Exception|Throwable|null $exception
+     * @param ServerRequestInterface $request
+     * @param HttpErrorException     $exception
      *
      * @return ResponseInterface
      */
-    private function handleError(ServerRequestInterface $request, $statusCode, $exception)
+    private function handleError(ServerRequestInterface $request, HttpErrorException $exception)
     {
-        $request = $request->withAttribute($this->attribute, [
-            'status_code' => $statusCode,
-            'exception' => $exception,
-        ]);
-
+        $request = $request->withAttribute($this->attribute, $exception);
         $arguments = array_merge([$request], $this->arguments);
         $callable = (new ReflectionResolver())->resolve($this->handler, $arguments);
 

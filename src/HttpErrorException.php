@@ -62,16 +62,17 @@ class HttpErrorException extends Exception
      *
      * @param int $code A valid http error code
      * @param array $context
+     * @param Exception|Throwable|null $previous
      *
      * @return static
      */
-    public static function create($code = 500, array $context = [])
+    public static function create($code = 500, array $context = [], $previous = null)
     {
         if (!isset(self::$phrases[$code])) {
             throw new RuntimeException("Http error not valid ({$code})");
         }
 
-        $exception = new static(self::$phrases[$code], $code);
+        $exception = new static(self::$phrases[$code], $code, $previous);
         $exception->setContext($context);
 
         return $exception;

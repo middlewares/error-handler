@@ -16,7 +16,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             new ErrorHandler(function ($request) {
                 echo 'Page not found';
 
-                return Factory::createResponse($request->getAttribute('error')['status_code']);
+                return Factory::createResponse($request->getAttribute('error')->getCode());
             }),
             function () {
                 return Factory::createResponse(404);
@@ -31,11 +31,13 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
     {
         $response = Dispatcher::run([
             new ErrorHandler(function ($request) {
-                echo $request->getAttribute('error')['status_code'];
-                echo '-'.$request->getAttribute('error')['exception']->getMessage();
-                echo '-'.$request->getAttribute('error')['exception']->getContext()['foo'];
+                $error = $request->getAttribute('error');
 
-                return Factory::createResponse($request->getAttribute('error')['status_code']);
+                echo $error->getCode();
+                echo '-'.$error->getMessage();
+                echo '-'.$error->getContext()['foo'];
+
+                return Factory::createResponse($error->getCode());
             }),
             function () {
                 throw HttpErrorException::create(500, ['foo' => 'bar']);
@@ -52,7 +54,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             (new ErrorHandler(function ($request) {
                 echo 'Page not found';
 
-                return Factory::createResponse($request->getAttribute('foo')['status_code']);
+                return Factory::createResponse($request->getAttribute('foo')->getCode());
             }))->attribute('foo'),
             function () {
                 return Factory::createResponse(404);
@@ -69,9 +71,9 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
         $response = Dispatcher::run([
             (new ErrorHandler(function ($request) {
-                echo $request->getAttribute('error')['exception'];
+                echo $request->getAttribute('error')->getPrevious();
 
-                return Factory::createResponse($request->getAttribute('error')['status_code']);
+                return Factory::createResponse($request->getAttribute('error')->getCode());
             }))->catchExceptions(),
             function ($request) use ($exception) {
                 echo 'not showed text';
@@ -135,7 +137,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
             (new ErrorHandler(function ($request, $message) {
                 echo $message;
 
-                return Factory::createResponse($request->getAttribute('error')['status_code']);
+                return Factory::createResponse($request->getAttribute('error')->getCode());
             }))->arguments('Hello world'),
             function () {
                 return Factory::createResponse(500);

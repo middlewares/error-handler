@@ -6,9 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.6.0] - 2017-03-26
 
-### Added
+### Changed
 
 * Added `Middlewares\HttpErrorException` class to allow to pass data context to the error handler
+* Changed the error handler signature. The attribute `error` contains an instance of `Middlewares\HttpErrorException` instead an array.
 
 ## [0.5.0] - 2017-02-05
 
