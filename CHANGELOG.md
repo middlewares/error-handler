@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 * Added `Middlewares\HttpErrorException` class to allow to pass data context to the error handler
 * Changed the error handler signature. The attribute `error` contains an instance of `Middlewares\HttpErrorException` instead an array.
+* Updated to `middlewares/utils#~0.11
 
 ## [0.5.0] - 2017-02-05
 
