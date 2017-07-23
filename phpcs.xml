@@ -3,11 +3,19 @@
     <description>Middlewares coding standard</description>
 
     <!-- display progress -->
-    <arg value="p"/>
+    <arg name="report" value="full" />
+    <arg value="np" />
     <arg name="colors"/>
 
     <!-- coding standard -->
     <rule ref="PSR2"/>
+
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace">
+        <properties>
+            <property name="ignoreBlankLines" value="false"/>
+        </properties>
+    </rule>
 
     <!-- Paths to check -->
     <file>src</file>

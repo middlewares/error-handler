@@ -2,8 +2,8 @@
 
 namespace Middlewares;
 
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class ErrorHandlerDefault
 {
@@ -121,8 +121,8 @@ EOT;
         echo json_encode([
             'error' => [
                 'code' => $error->getCode(),
-                'message' => $error->getMessage()
-            ]
+                'message' => $error->getMessage(),
+            ],
         ]);
     }
 

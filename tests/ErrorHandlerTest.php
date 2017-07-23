@@ -2,13 +2,13 @@
 
 namespace Middlewares\Tests;
 
+use Exception;
 use Middlewares\ErrorHandler;
 use Middlewares\HttpErrorException;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
-use Exception;
 
-class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
+class ErrorHandlerTest extends \PHPUnit\Framework\TestCase
 {
     public function testError()
     {
@@ -85,6 +85,9 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals((string) $exception, (string) $response->getBody());
     }
 
+    /**
+     * @return string[][]
+     */
     public function formatsProvider()
     {
         return [
@@ -102,6 +105,7 @@ class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @dataProvider formatsProvider
+     * @param string[] $type
      */
     public function testFormats($type)
     {

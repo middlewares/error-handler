@@ -60,8 +60,8 @@ class HttpErrorException extends Exception
     /**
      * Create and returns a new instance
      *
-     * @param int $code A valid http error code
-     * @param array $context
+     * @param int                      $code     A valid http error code
+     * @param array                    $context
      * @param Exception|Throwable|null $previous
      *
      * @return static

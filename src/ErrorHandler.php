@@ -2,12 +2,12 @@
 
 namespace Middlewares;
 
-use Middlewares\Utils\CallableResolver\ReflectionResolver;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
-use Interop\Http\ServerMiddleware\DelegateInterface;
 use Exception;
+use Interop\Http\ServerMiddleware\DelegateInterface;
+use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Middlewares\Utils\CallableResolver\ReflectionResolver;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 
 class ErrorHandler implements MiddlewareInterface
@@ -107,6 +107,8 @@ class ErrorHandler implements MiddlewareInterface
      * @param ServerRequestInterface $request
      * @param DelegateInterface      $delegate
      *
+     * @throws \Exception
+     * @throws \Throwable
      * @return ResponseInterface
      */
     public function process(ServerRequestInterface $request, DelegateInterface $delegate)
