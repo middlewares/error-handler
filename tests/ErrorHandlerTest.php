@@ -8,7 +8,7 @@ use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use Exception;
 
-class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
+class ErrorHandlerTest extends \PHPUnit\Framework\TestCase
 {
     public function testError()
     {

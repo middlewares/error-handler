@@ -1,14 +1,50 @@
 language: php
 sudo: false
+dist: trusty
 
 php:
   - 5.6
   - 7.0
   - 7.1
+  - nightly
 
-before_script:
-  - composer self-update
-  - composer install -n
+os: linux
+
+env:
+  - COMPOSER_FLAGS="--prefer-lowest"
+  - COMPOSER_FLAGS=""
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+before_install:
+  - if [[ $TRAVIS_PHP_VERSION != nightly && $COVERAGE != yes ]]; then phpenv config-rm xdebug.ini; fi
+  - echo 'opcache.enable=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo 'opcache.enable_cli=1' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - travis_retry composer self-update
+
+install: travis_retry composer update --optimize-autoloader --prefer-dist --prefer-stable --no-progress --no-interaction $COMPOSER_FLAGS -vv
 
 script:
-  - composer test
+  - composer validate
+  - vendor/bin/phpunit --colors --no-coverage
+
+jobs:
+  allow_failures:
+    - php: nightly
+  include:
+    - php: nightly
+      env: COMPOSER_FLAGS="--ignore-platform-reqs"
+    - stage: test with coverage
+      php: 7.1
+      env: COVERAGE=yes
+      script: vendor/bin/phpunit --colors --coverage-text
+    - stage: check coding style
+      php: 7.1
+      env: COMPOSER_FLAGS=""
+      script: php -n -d memory_limit=768M vendor/bin/phpcs
+    - stage: check coding style
+      php: 7.1
+      env: COMPOSER_FLAGS=""
+      script: php -n -d memory_limit=768M vendor/bin/php-cs-fixer fix --dry-run -vv
