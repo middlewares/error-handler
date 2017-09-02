@@ -2,13 +2,14 @@
 
 namespace Middlewares\Tests;
 
+use PHPUnit\Framework\TestCase;
 use Middlewares\ErrorHandler;
 use Middlewares\HttpErrorException;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use Exception;
 
-class ErrorHandlerTest extends \PHPUnit_Framework_TestCase
+class ErrorHandlerTest extends TestCase
 {
     public function testError()
     {
