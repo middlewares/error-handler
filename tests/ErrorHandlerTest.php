@@ -2,12 +2,12 @@
 
 namespace Middlewares\Tests;
 
-use PHPUnit\Framework\TestCase;
+use Exception;
 use Middlewares\ErrorHandler;
 use Middlewares\HttpErrorException;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
-use Exception;
+use PHPUnit\Framework\TestCase;
 
 class ErrorHandlerTest extends TestCase
 {
@@ -103,6 +103,7 @@ class ErrorHandlerTest extends TestCase
 
     /**
      * @dataProvider formatsProvider
+     * @param mixed $type
      */
     public function testFormats($type)
     {
