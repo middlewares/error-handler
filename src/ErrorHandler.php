@@ -3,8 +3,8 @@
 namespace Middlewares;
 
 use Exception;
-use Interop\Http\ServerMiddleware\DelegateInterface;
-use Interop\Http\ServerMiddleware\MiddlewareInterface;
+use Interop\Http\Server\MiddlewareInterface;
+use Interop\Http\Server\RequestHandlerInterface;
 use Middlewares\Utils\CallableResolver\ReflectionResolver;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -104,18 +104,18 @@ class ErrorHandler implements MiddlewareInterface
     /**
      * Process a server request and return a response.
      *
-     * @param ServerRequestInterface $request
-     * @param DelegateInterface      $delegate
+     * @param ServerRequestInterface  $request
+     * @param RequestHandlerInterface $handler
      *
      * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request, DelegateInterface $delegate)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler)
     {
         ob_start();
         $level = ob_get_level();
 
         try {
-            $response = $delegate->process($request);
+            $response = $handler->handle($request);
 
             if ($this->isError($response->getStatusCode())) {
                 $exception = new HttpErrorException($response->getReasonPhrase(), $response->getStatusCode());
