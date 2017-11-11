@@ -5,6 +5,7 @@ namespace Middlewares;
 
 use Exception;
 use RuntimeException;
+use Throwable;
 
 class HttpErrorException extends Exception
 {
@@ -61,13 +62,13 @@ class HttpErrorException extends Exception
     /**
      * Create and returns a new instance
      *
-     * @param int                      $code     A valid http error code
-     * @param array                    $context
-     * @param Exception|Throwable|null $previous
+     * @param int            $code     A valid http error code
+     * @param array          $context
+     * @param Throwable|null $previous
      *
      * @return static
      */
-    public static function create(int $code = 500, array $context = [], $previous = null)
+    public static function create(int $code = 500, array $context = [], Throwable $previous = null)
     {
         if (!isset(self::$phrases[$code])) {
             throw new RuntimeException("Http error not valid ({$code})");
@@ -90,7 +91,7 @@ class HttpErrorException extends Exception
     /**
      * Return the data context
      */
-    public function getContext()
+    public function getContext(): array
     {
         return $this->context;
     }
