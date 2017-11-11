@@ -1,11 +1,11 @@
 <?php
+declare(strict_types = 1);
 
 namespace Middlewares;
 
-use Exception;
 use Interop\Http\Server\MiddlewareInterface;
 use Interop\Http\Server\RequestHandlerInterface;
-use Middlewares\Utils\CallableResolver\ReflectionResolver;
+use Middlewares\Utils\CallableHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
@@ -49,12 +49,8 @@ class ErrorHandler implements MiddlewareInterface
 
     /**
      * Configure the catchExceptions.
-     *
-     * @param bool $catch
-     *
-     * @return self
      */
-    public function catchExceptions($catch = true)
+    public function catchExceptions(bool $catch = true): self
     {
         $this->catchExceptions = (bool) $catch;
 
@@ -63,12 +59,8 @@ class ErrorHandler implements MiddlewareInterface
 
     /**
      * Configure the status code validator.
-     *
-     * @param callable $statusCodeValidator
-     *
-     * @return self
      */
-    public function statusCode(callable $statusCodeValidator)
+    public function statusCode(callable $statusCodeValidator): self
     {
         $this->statusCodeValidator = $statusCodeValidator;
 
@@ -77,12 +69,8 @@ class ErrorHandler implements MiddlewareInterface
 
     /**
      * Set the attribute name to store the error info.
-     *
-     * @param string $attribute
-     *
-     * @return self
      */
-    public function attribute($attribute)
+    public function attribute(string $attribute): self
     {
         $this->attribute = $attribute;
 
@@ -91,25 +79,18 @@ class ErrorHandler implements MiddlewareInterface
 
     /**
      * Extra arguments passed to the handler.
-     *
-     * @return self
      */
-    public function arguments()
+    public function arguments(...$arguments): self
     {
-        $this->arguments = func_get_args();
+        $this->arguments = $arguments;
 
         return $this;
     }
 
     /**
      * Process a server request and return a response.
-     *
-     * @param ServerRequestInterface  $request
-     * @param RequestHandlerInterface $handler
-     *
-     * @return ResponseInterface
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         ob_start();
         $level = ob_get_level();
@@ -131,12 +112,6 @@ class ErrorHandler implements MiddlewareInterface
             }
 
             return $this->handleError($request, HttpErrorException::create(500, [], $exception));
-        } catch (Exception $exception) {
-            if (!$this->catchExceptions) {
-                throw $exception;
-            }
-
-            return $this->handleError($request, HttpErrorException::create(500, [], $exception));
         } finally {
             while (ob_get_level() >= $level) {
                 ob_end_clean();
@@ -146,29 +121,19 @@ class ErrorHandler implements MiddlewareInterface
 
     /**
      * Execute the error handler.
-     *
-     * @param ServerRequestInterface $request
-     * @param HttpErrorException     $exception
-     *
-     * @return ResponseInterface
      */
-    private function handleError(ServerRequestInterface $request, HttpErrorException $exception)
+    private function handleError(ServerRequestInterface $request, HttpErrorException $exception): ResponseInterface
     {
         $request = $request->withAttribute($this->attribute, $exception);
-        $arguments = array_merge([$request], $this->arguments);
-        $callable = (new ReflectionResolver())->resolve($this->handler, $arguments);
+        $handler = new CallableHandler($this->handler, $this->arguments);
 
-        return Utils\CallableHandler::execute($callable, $arguments);
+        return $handler->handle($request);
     }
 
     /**
      * Check whether the status code represents an error or not.
-     *
-     * @param int $statusCode
-     *
-     * @return bool
      */
-    private function isError($statusCode)
+    private function isError(int $statusCode): bool
     {
         if ($this->statusCodeValidator) {
             return call_user_func($this->statusCodeValidator, $statusCode);

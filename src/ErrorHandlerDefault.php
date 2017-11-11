@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace Middlewares;
 
@@ -35,12 +36,8 @@ class ErrorHandlerDefault
 
     /**
      * Execute the error handler.
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
      */
-    public function __invoke(ServerRequestInterface $request)
+    public function __invoke(ServerRequestInterface $request): ResponseInterface
     {
         $error = $request->getAttribute('error');
         $accept = $request->getHeaderLine('Accept');
@@ -63,8 +60,6 @@ class ErrorHandlerDefault
 
     /**
      * Output the error as plain text.
-     *
-     * @param HttpErrorException $error
      */
     public static function plain(HttpErrorException $error)
     {
@@ -73,8 +68,6 @@ class ErrorHandlerDefault
 
     /**
      * Output the error as svg image.
-     *
-     * @param HttpErrorException $error
      */
     public static function svg(HttpErrorException $error)
     {
@@ -89,8 +82,6 @@ EOT;
 
     /**
      * Output the error as html.
-     *
-     * @param HttpErrorException $error
      */
     public static function html(HttpErrorException $error)
     {
@@ -113,8 +104,6 @@ EOT;
 
     /**
      * Output the error as json.
-     *
-     * @param HttpErrorException $error
      */
     public static function json(HttpErrorException $error)
     {
@@ -128,8 +117,6 @@ EOT;
 
     /**
      * Output the error as xml.
-     *
-     * @param HttpErrorException $error
      */
     public static function xml(HttpErrorException $error)
     {
@@ -144,8 +131,6 @@ EOT;
 
     /**
      * Output the error as jpeg.
-     *
-     * @param HttpErrorException $error
      */
     public static function jpeg(HttpErrorException $error)
     {
@@ -156,8 +141,6 @@ EOT;
 
     /**
      * Output the error as gif.
-     *
-     * @param HttpErrorException $error
      */
     public static function gif(HttpErrorException $error)
     {
@@ -168,8 +151,6 @@ EOT;
 
     /**
      * Output the error as png.
-     *
-     * @param HttpErrorException $error
      */
     public static function png(HttpErrorException $error)
     {
@@ -180,8 +161,6 @@ EOT;
 
     /**
      * Creates a image resource with the error text.
-     *
-     * @param HttpErrorException $error
      *
      * @return resource
      */

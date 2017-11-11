@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace Middlewares;
 
@@ -66,7 +67,7 @@ class HttpErrorException extends Exception
      *
      * @return static
      */
-    public static function create($code = 500, array $context = [], $previous = null)
+    public static function create(int $code = 500, array $context = [], $previous = null)
     {
         if (!isset(self::$phrases[$code])) {
             throw new RuntimeException("Http error not valid ({$code})");
@@ -80,8 +81,6 @@ class HttpErrorException extends Exception
 
     /**
      * Add data context used in the error handler
-     *
-     * @param array $context
      */
     public function setContext(array $context)
     {
@@ -90,8 +89,6 @@ class HttpErrorException extends Exception
 
     /**
      * Return the data context
-     *
-     * @return array
      */
     public function getContext()
     {
