@@ -3,10 +3,11 @@ declare(strict_types = 1);
 
 namespace Middlewares;
 
+use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-class ErrorHandlerDefault
+class ErrorHandlerDefault implements RequestHandlerInterface
 {
     private $handlers = [
         'plain' => [
@@ -37,7 +38,7 @@ class ErrorHandlerDefault
     /**
      * Execute the error handler.
      */
-    public function __invoke(ServerRequestInterface $request): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $error = $request->getAttribute('error');
         $accept = $request->getHeaderLine('Accept');
@@ -46,32 +47,32 @@ class ErrorHandlerDefault
         foreach ($this->handlers as $method => $types) {
             foreach ($types as $type) {
                 if (stripos($accept, $type) !== false) {
-                    call_user_func(__CLASS__.'::'.$method, $error);
+                    $response->getBody()->write(call_user_func(__CLASS__.'::'.$method, $error));
 
                     return $response->withHeader('Content-Type', $type);
                 }
             }
         }
 
-        static::html($error);
+        $response->getBody()->write(static::html($error));
 
         return $response->withHeader('Content-Type', 'text/html');
     }
 
     /**
-     * Output the error as plain text.
+     * Return the error as plain text.
      */
-    public static function plain(HttpErrorException $error)
+    public static function plain(HttpErrorException $error): string
     {
-        echo sprintf("Error %s\n%s", $error->getCode(), $error->getMessage());
+        return sprintf("Error %s\n%s", $error->getCode(), $error->getMessage());
     }
 
     /**
-     * Output the error as svg image.
+     * Return the error as svg image.
      */
-    public static function svg(HttpErrorException $error)
+    public static function svg(HttpErrorException $error): string
     {
-        echo <<<EOT
+        return <<<EOT
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="50" viewBox="0 0 200 50">
     <text x="20" y="30" font-family="sans-serif" title="{$error->getMessage()}">
         Error {$error->getCode()}
@@ -81,11 +82,11 @@ EOT;
     }
 
     /**
-     * Output the error as html.
+     * Return the error as html.
      */
-    public static function html(HttpErrorException $error)
+    public static function html(HttpErrorException $error): string
     {
-        echo <<<EOT
+        return <<<EOT
 <!DOCTYPE html>
 <html>
 <head>
@@ -103,11 +104,11 @@ EOT;
     }
 
     /**
-     * Output the error as json.
+     * Return the error as json.
      */
-    public static function json(HttpErrorException $error)
+    public static function json(HttpErrorException $error): string
     {
-        echo json_encode([
+        return json_encode([
             'error' => [
                 'code' => $error->getCode(),
                 'message' => $error->getMessage(),
@@ -116,11 +117,11 @@ EOT;
     }
 
     /**
-     * Output the error as xml.
+     * Return the error as xml.
      */
-    public static function xml(HttpErrorException $error)
+    public static function xml(HttpErrorException $error): string
     {
-        echo <<<EOT
+        return <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <error>
     <code>{$error->getCode()}</code>
@@ -130,41 +131,33 @@ EOT;
     }
 
     /**
-     * Output the error as jpeg.
+     * Return the error as jpeg.
      */
-    public static function jpeg(HttpErrorException $error)
+    public static function jpeg(HttpErrorException $error): string
     {
-        $image = self::createImage($error);
-
-        imagejpeg($image);
+        return self::getImage($error, 'imagejpeg');
     }
 
     /**
-     * Output the error as gif.
+     * Return the error as gif.
      */
-    public static function gif(HttpErrorException $error)
+    public static function gif(HttpErrorException $error): string
     {
-        $image = self::createImage($error);
-
-        imagegif($image);
+        return self::getImage($error, 'imagegif');
     }
 
     /**
-     * Output the error as png.
+     * Return the error as png.
      */
-    public static function png(HttpErrorException $error)
+    public static function png(HttpErrorException $error): string
     {
-        $image = self::createImage($error);
-
-        imagepng($image);
+        return self::getImage($error, 'imagepng');
     }
 
     /**
-     * Creates a image resource with the error text.
-     *
-     * @return resource
+     * Create and return a image as string.
      */
-    private static function createImage(HttpErrorException $error)
+    private static function getImage(HttpErrorException $error, callable $function): string
     {
         $size = 200;
         $image = imagecreatetruecolor($size, $size);
@@ -175,6 +168,8 @@ EOT;
             imagestring($image, 5, 10, ($line * 18) + 28, $text, $textColor);
         }
 
-        return $image;
+        ob_start();
+        $function($image);
+        return ob_get_clean();
     }
 }

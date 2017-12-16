@@ -28,23 +28,29 @@ composer require middlewares/error-handler
 ## Example
 
 ```php
+use Interop\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-$handler = function (ServerRequestInterface $request) use ($logger) {
-    //Get the error info as an instance of Middlewares\HttpErrorException
-    $error = $request->getAttribute('error');
+class ErrorRequestHandler implements RequestHandlerInterface
+{
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        //Get the error info as an instance of Middlewares\HttpErrorException
+        $error = $request->getAttribute('error');
 
-    //The error can contains context data that you can use, for example for PSR-3 loggin
-    $logger->error("There's an error", $error->getContext());
+        //The error can contains context data that you can use, for example for PSR-3 loggin
+        Logger::error("There's an error", $error->getContext());
 
-    //Any output is captured and added to the response's body
-    echo $error->getMessage();
+        //Any output is captured and added to the response's body
+        echo $error->getMessage();
 
-    return (new Response())->withStatus($error->getCode());
-};
+        return (new Response())->withStatus($error->getCode());
+    }
+}
 
 $dispatcher = new Dispatcher([
-    new Middlewares\ErrorHandler($handler),
+    new Middlewares\ErrorHandler(new ErrorRequestHandler()),
 
     function ($request, $next) {
         $user = Session::signup($request);
@@ -66,31 +72,9 @@ $response = $dispatcher->dispatch(new ServerRequest());
 
 ## Options
 
-#### `__construct(string|callable $handler = null)`
+#### `__construct(Interop\Http\Server\RequestHandlerInterface $handler = null)`
 
-Assign the callable used to handle the error. It can be a callable or a string with the format `Class::method`. The signature of the handler is the following:
-
-```php
-use Psr\Http\Message\ServerRequestInterface;
-
-$handler = function (ServerRequestInterface $request) {
-    //Get the error info using the "error" attribute
-    $error = $request->getAttribute('error');
-
-    //Any output is captured and added to the body stream
-    echo $error->getMessage();
-
-    return (new Response())->withStatus($error->getCode());
-};
-
-$dispatcher = new Dispatcher([
-    new Middlewares\ErrorHandler($handler)
-]);
-
-$response = $dispatcher->dispatch(new ServerRequest());
-```
-
-If it's not provided, use [the default](src/ErrorHandlerDefault.php) that provides different outputs for different formats.
+The request handler used to generate the response. If it's not provided, use [the default](src/ErrorHandlerDefault.php) that provides different outputs for different formats.
 
 #### `catchExceptions(true)`
 
@@ -112,31 +96,6 @@ $dispatcher = new Dispatcher([
 #### `attribute(string $attribute)`
 
 The attribute name used to store the instance of `Middlewares\HttpErrorException` with the error info in the server request. By default is `error`.
-
-#### `arguments(...$args)`
-
-Extra arguments to pass to the error handler. This is useful to inject, for example a logger:
-
-```php
-$handler = function (ServerRequestInterface $request, $logger) {
-    $error = $request->getAttribute('error');
-    $message = sprintf('Oops, a "%s" erro ocurried', $error->getCode());
-
-    //Log the error
-    $logger->error($message, $error->getContext());
-
-    //Build the response
-    $response = (new Response())->withStatus($error->getCode());
-    $response->getBody()->write($message);
-
-    return $response;
-};
-
-$dispatcher = new Dispatcher([
-    (new Middlewares\ErrorHandler($handler))
-        ->arguments($logger)
-]);
-```
 
 ---
 

@@ -5,6 +5,7 @@ namespace Middlewares\Tests;
 use Exception;
 use Middlewares\ErrorHandler;
 use Middlewares\HttpErrorException;
+use Middlewares\Utils\CallableHandler;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
@@ -14,11 +15,11 @@ class ErrorHandlerTest extends TestCase
     public function testError()
     {
         $response = Dispatcher::run([
-            new ErrorHandler(function ($request) {
+            new ErrorHandler(new CallableHandler(function ($request) {
                 echo 'Page not found';
 
                 return Factory::createResponse($request->getAttribute('error')->getCode());
-            }),
+            })),
             function () {
                 return Factory::createResponse(404);
             },
@@ -31,7 +32,7 @@ class ErrorHandlerTest extends TestCase
     public function testHttpErrorException()
     {
         $response = Dispatcher::run([
-            new ErrorHandler(function ($request) {
+            new ErrorHandler(new CallableHandler(function ($request) {
                 $error = $request->getAttribute('error');
 
                 echo $error->getCode();
@@ -39,7 +40,7 @@ class ErrorHandlerTest extends TestCase
                 echo '-'.$error->getContext()['foo'];
 
                 return Factory::createResponse($error->getCode());
-            }),
+            })),
             function () {
                 throw HttpErrorException::create(500, ['foo' => 'bar']);
             },
@@ -52,11 +53,11 @@ class ErrorHandlerTest extends TestCase
     public function testAttribute()
     {
         $response = Dispatcher::run([
-            (new ErrorHandler(function ($request) {
+            (new ErrorHandler(new CallableHandler(function ($request) {
                 echo 'Page not found';
 
                 return Factory::createResponse($request->getAttribute('foo')->getCode());
-            }))->attribute('foo'),
+            })))->attribute('foo'),
             function () {
                 return Factory::createResponse(404);
             },
@@ -71,11 +72,11 @@ class ErrorHandlerTest extends TestCase
         $exception = new Exception('Error Processing Request');
 
         $response = Dispatcher::run([
-            (new ErrorHandler(function ($request) {
+            (new ErrorHandler(new CallableHandler(function ($request) {
                 echo $request->getAttribute('error')->getPrevious();
 
                 return Factory::createResponse($request->getAttribute('error')->getCode());
-            }))->catchExceptions(),
+            })))->catchExceptions(),
             function ($request) use ($exception) {
                 echo 'not showed text';
                 throw $exception;
@@ -131,23 +132,6 @@ class ErrorHandlerTest extends TestCase
 
         $this->assertEquals(500, $response->getStatusCode());
         $this->assertEquals('text/html', $response->getHeaderLine('Content-Type'));
-    }
-
-    public function testArguments()
-    {
-        $response = Dispatcher::run([
-            (new ErrorHandler(function ($request, $message) {
-                echo $message;
-
-                return Factory::createResponse($request->getAttribute('error')->getCode());
-            }))->arguments('Hello world'),
-            function () {
-                return Factory::createResponse(500);
-            },
-        ]);
-
-        $this->assertEquals(500, $response->getStatusCode());
-        $this->assertEquals('Hello world', (string) $response->getBody());
     }
 
     public function testValidators()

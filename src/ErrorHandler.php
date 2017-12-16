@@ -5,22 +5,13 @@ namespace Middlewares;
 
 use Interop\Http\Server\MiddlewareInterface;
 use Interop\Http\Server\RequestHandlerInterface;
-use Middlewares\Utils\CallableHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 
 class ErrorHandler implements MiddlewareInterface
 {
-    /**
-     * @var callable|string The handler used
-     */
     private $handler;
-
-    /**
-     * @var array Extra arguments passed to the handler
-     */
-    private $arguments = [];
 
     /**
      * @var callable|null The status code validator
@@ -37,12 +28,7 @@ class ErrorHandler implements MiddlewareInterface
      */
     private $attribute = 'error';
 
-    /**
-     * Constructor.
-     *
-     * @param callable|string|null $handler
-     */
-    public function __construct($handler = 'Middlewares\\ErrorHandlerDefault')
+    public function __construct(RequestHandlerInterface $handler = null)
     {
         $this->handler = $handler;
     }
@@ -73,16 +59,6 @@ class ErrorHandler implements MiddlewareInterface
     public function attribute(string $attribute): self
     {
         $this->attribute = $attribute;
-
-        return $this;
-    }
-
-    /**
-     * Extra arguments passed to the handler.
-     */
-    public function arguments(...$arguments): self
-    {
-        $this->arguments = $arguments;
 
         return $this;
     }
@@ -125,7 +101,7 @@ class ErrorHandler implements MiddlewareInterface
     private function handleError(ServerRequestInterface $request, HttpErrorException $exception): ResponseInterface
     {
         $request = $request->withAttribute($this->attribute, $exception);
-        $handler = new CallableHandler($this->handler, $this->arguments);
+        $handler = $this->handler ?: new ErrorHandlerDefault();
 
         return $handler->handle($request);
     }
