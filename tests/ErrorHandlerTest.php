@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 
 namespace Middlewares\Tests;
 
@@ -9,6 +10,7 @@ use Middlewares\Utils\CallableHandler;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 class ErrorHandlerTest extends TestCase
 {
@@ -27,6 +29,13 @@ class ErrorHandlerTest extends TestCase
 
         $this->assertEquals(404, $response->getStatusCode());
         $this->assertEquals('Page not found', (string) $response->getBody());
+    }
+
+    public function testInvalidHttpErrorException()
+    {
+        $this->expectException(RuntimeException::class);
+
+        HttpErrorException::create(0);
     }
 
     public function testHttpErrorException()
@@ -85,6 +94,18 @@ class ErrorHandlerTest extends TestCase
 
         $this->assertEquals(500, $response->getStatusCode());
         $this->assertEquals((string) $exception, (string) $response->getBody());
+    }
+
+    public function testNotCatchedException()
+    {
+        $this->expectException(Exception::class);
+
+        Dispatcher::run([
+            new ErrorHandler(),
+            function ($request) {
+                throw new Exception();
+            },
+        ]);
     }
 
     public function formatsProvider()
