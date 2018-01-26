@@ -108,7 +108,7 @@ class ErrorHandlerTest extends TestCase
         ]);
     }
 
-    public function formatsProvider()
+    public function formatsProvider(): array
     {
         return [
             ['text/plain'],
@@ -125,9 +125,8 @@ class ErrorHandlerTest extends TestCase
 
     /**
      * @dataProvider formatsProvider
-     * @param mixed $type
      */
-    public function testFormats($type)
+    public function testFormats(string $type)
     {
         $request = Factory::createServerRequest()->withHeader('Accept', $type);
 
