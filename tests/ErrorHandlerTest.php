@@ -128,7 +128,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testFormats(string $type)
     {
-        $request = Factory::createServerRequest()->withHeader('Accept', $type);
+        $request = Factory::createServerRequest('GET', '/')->withHeader('Accept', $type);
 
         $response = Dispatcher::run([
             new ErrorHandler(),

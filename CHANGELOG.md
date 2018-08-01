@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) 
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.0] - UNRELEASED
+
+### Added
+
+- Added a first argument to the constructor of `ErrorHandlerDefault` to customize the `ResponseFactoryInterface`
+
+### Changed
+
+- Upgraded dev dependencies
+
 ## [1.0.0] - 2018-01-26
 
 ### Added
@@ -92,6 +102,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 First version
 
+
+[1.1.0]: https://github.com/middlewares/error-handler/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/middlewares/error-handler/compare/v0.9.0...v1.0.0
 [0.9.0]: https://github.com/middlewares/error-handler/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/middlewares/error-handler/compare/v0.7.0...v0.8.0

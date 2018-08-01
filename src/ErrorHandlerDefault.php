@@ -3,12 +3,15 @@ declare(strict_types = 1);
 
 namespace Middlewares;
 
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 class ErrorHandlerDefault implements RequestHandlerInterface
 {
+    private $responseFactory;
+
     private $handlers = [
         'plain' => [
             'text/plain',
@@ -35,6 +38,11 @@ class ErrorHandlerDefault implements RequestHandlerInterface
         ],
     ];
 
+    public function __construct(ResponseFactoryInterface $responseFactory = null)
+    {
+        $this->responseFactory = $responseFactory;
+    }
+
     /**
      * Execute the error handler.
      */
@@ -42,7 +50,8 @@ class ErrorHandlerDefault implements RequestHandlerInterface
     {
         $error = $request->getAttribute('error');
         $accept = $request->getHeaderLine('Accept');
-        $response = Utils\Factory::createResponse($error->getCode());
+        $responseFactory = $this->responseFactory ?: Utils\Factory::getResponseFactory();
+        $response = $responseFactory->createResponse($error->getCode());
 
         foreach ($this->handlers as $method => $types) {
             foreach ($types as $type) {
