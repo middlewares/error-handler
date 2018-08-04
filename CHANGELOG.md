@@ -9,11 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- PSR-17 support
 - Added a first argument to the constructor of `ErrorHandlerDefault` to customize the `ResponseFactoryInterface`
-
-### Changed
-
-- Upgraded dev dependencies
 
 ## [1.1.0] - 2018-06-25
 
