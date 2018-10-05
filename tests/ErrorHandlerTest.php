@@ -4,182 +4,175 @@ declare(strict_types = 1);
 namespace Middlewares\Tests;
 
 use Exception;
+use Middlewares\ErrorFormatter;
 use Middlewares\ErrorHandler;
 use Middlewares\HttpErrorException;
-use Middlewares\Utils\CallableHandler;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 class ErrorHandlerTest extends TestCase
 {
-    public function testError()
+    public function testMiddleware()
     {
         $response = Dispatcher::run([
-            new ErrorHandler(new CallableHandler(function ($request) {
-                echo 'Page not found';
-
-                return Factory::createResponse($request->getAttribute('error')->getCode());
-            })),
-            function () {
-                return Factory::createResponse(404);
-            },
-        ]);
-
-        $this->assertEquals(404, $response->getStatusCode());
-        $this->assertEquals('Page not found', (string) $response->getBody());
-    }
-
-    public function testInvalidHttpErrorException()
-    {
-        $this->expectException(RuntimeException::class);
-
-        HttpErrorException::create(0);
-    }
-
-    public function testHttpErrorException()
-    {
-        $response = Dispatcher::run([
-            new ErrorHandler(new CallableHandler(function ($request) {
-                $error = $request->getAttribute('error');
-
-                echo $error->getCode();
-                echo '-'.$error->getMessage();
-                echo '-'.$error->getContext()['foo'];
-
-                return Factory::createResponse($error->getCode());
-            })),
-            function () {
-                throw HttpErrorException::create(500, ['foo' => 'bar']);
-            },
-        ]);
-
-        $this->assertEquals(500, $response->getStatusCode());
-        $this->assertEquals('500-Internal Server Error-bar', (string) $response->getBody());
-    }
-
-    public function testAttribute()
-    {
-        $response = Dispatcher::run([
-            (new ErrorHandler(new CallableHandler(function ($request) {
-                echo 'Page not found';
-
-                return Factory::createResponse($request->getAttribute('foo')->getCode());
-            })))->attribute('foo'),
-            function () {
-                return Factory::createResponse(404);
-            },
-        ]);
-
-        $this->assertEquals(404, $response->getStatusCode());
-        $this->assertEquals('Page not found', (string) $response->getBody());
-    }
-
-    public function testException()
-    {
-        $exception = new Exception('Error Processing Request');
-
-        $response = Dispatcher::run([
-            (new ErrorHandler(new CallableHandler(function ($request) {
-                echo $request->getAttribute('error')->getPrevious();
-
-                return Factory::createResponse($request->getAttribute('error')->getCode());
-            })))->catchExceptions(),
-            function ($request) use ($exception) {
-                echo 'not showed text';
-                throw $exception;
-            },
-        ]);
-
-        $this->assertEquals(500, $response->getStatusCode());
-        $this->assertEquals((string) $exception, (string) $response->getBody());
-    }
-
-    public function testNotCatchedException()
-    {
-        $this->expectException(Exception::class);
-
-        Dispatcher::run([
             new ErrorHandler(),
             function ($request) {
-                throw new Exception();
+                throw new Exception('Something went wrong');
             },
         ]);
+
+        $this->assertEquals(500, $response->getStatusCode());
+        $this->assertEquals('text/plain', $response->getHeaderLine('Content-Type'));
+        $this->assertContains('Something went wrong', (string) $response->getBody());
     }
 
-    public function formatsProvider(): array
+    public function testHttpException()
     {
-        return [
-            ['text/plain'],
-            ['text/css'],
-            ['text/javascript'],
-            ['image/jpeg'],
-            ['image/gif'],
-            ['image/png'],
-            ['image/svg+xml'],
-            ['application/json'],
-            ['text/xml'],
-        ];
-    }
-
-    /**
-     * @dataProvider formatsProvider
-     */
-    public function testFormats(string $type)
-    {
-        $request = Factory::createServerRequest('GET', '/')->withHeader('Accept', $type);
-
         $response = Dispatcher::run([
             new ErrorHandler(),
-            function () {
-                return Factory::createResponse(500);
+            function ($request) {
+                throw HttpErrorException::create(404);
+            },
+        ]);
+
+        $this->assertEquals(404, $response->getStatusCode());
+    }
+
+    public function testHttpStatusException()
+    {
+        $response = Dispatcher::run([
+            new ErrorHandler(),
+            function ($request) {
+                throw new class extends Exception {
+                    public function getStatusCode(): int
+                    {
+                        return 418;
+                    }
+                };
+            },
+        ]);
+
+        $this->assertEquals(418, $response->getStatusCode());
+    }
+
+    public function testGifFormatter()
+    {
+        $request = Factory::createServerRequest('GET', '/');
+        $request = $request->withheader('Accept', 'image/gif');
+
+        $response = Dispatcher::run([
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\GifFormatter()),
+            function ($request) {
+                throw new Exception('Something went wrong');
             },
         ], $request);
 
-        $this->assertEquals(500, $response->getStatusCode());
-        $this->assertEquals($type, $response->getHeaderLine('Content-Type'));
+        $this->assertEquals('image/gif', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testDefaultFormat()
+    public function testHtmlFormatter()
     {
-        $response = Dispatcher::run([
-            new ErrorHandler(),
-            function () {
-                return Factory::createResponse(500);
-            },
-        ]);
+        $request = Factory::createServerRequest('GET', '/');
+        $request = $request->withheader('Accept', 'text/html');
 
-        $this->assertEquals(500, $response->getStatusCode());
+        $response = Dispatcher::run([
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\HtmlFormatter()),
+            function ($request) {
+                throw new Exception('Something went wrong');
+            },
+        ], $request);
+
         $this->assertEquals('text/html', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testValidators()
+    public function testJpegFormatter()
     {
-        $validator = function ($code) {
-            return $code === 404;
-        };
+        $request = Factory::createServerRequest('GET', '/');
+        $request = $request->withheader('Accept', 'image/jpeg');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->statusCode($validator),
-            function () {
-                echo 'Content';
-
-                return Factory::createResponse(500);
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\JpegFormatter()),
+            function ($request) {
+                throw new Exception('Something went wrong');
             },
-        ]);
+        ], $request);
 
-        $this->assertEquals('Content', (string) $response->getBody());
+        $this->assertEquals('image/jpeg', $response->getHeaderLine('Content-Type'));
+    }
+
+    public function testJsonFormatter()
+    {
+        $request = Factory::createServerRequest('GET', '/');
+        $request = $request->withheader('Accept', 'application/json');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->statusCode($validator),
-            function () {
-                echo 'Content';
-
-                return Factory::createResponse(404);
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\JsonFormatter()),
+            function ($request) {
+                throw new Exception('Something went wrong');
             },
-        ]);
+        ], $request);
 
-        $this->assertNotEquals('Content', (string) $response->getBody());
+        $this->assertEquals('application/json', $response->getHeaderLine('Content-Type'));
+    }
+
+    public function testPlainFormatter()
+    {
+        $request = Factory::createServerRequest('GET', '/');
+        $request = $request->withheader('Accept', 'text/plain');
+
+        $response = Dispatcher::run([
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\PlainFormatter()),
+            function ($request) {
+                throw new Exception('Something went wrong');
+            },
+        ], $request);
+
+        $this->assertEquals('text/plain', $response->getHeaderLine('Content-Type'));
+    }
+
+    public function testPngFormatter()
+    {
+        $request = Factory::createServerRequest('GET', '/');
+        $request = $request->withheader('Accept', 'image/png');
+
+        $response = Dispatcher::run([
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\PngFormatter()),
+            function ($request) {
+                throw new Exception('Something went wrong');
+            },
+        ], $request);
+
+        $this->assertEquals('image/png', $response->getHeaderLine('Content-Type'));
+    }
+
+    public function testSvgFormatter()
+    {
+        $request = Factory::createServerRequest('GET', '/');
+        $request = $request->withheader('Accept', 'image/svg+xml');
+
+        $response = Dispatcher::run([
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\SvgFormatter()),
+            function ($request) {
+                throw new Exception('Something went wrong');
+            },
+        ], $request);
+
+        $this->assertEquals('image/svg+xml', $response->getHeaderLine('Content-Type'));
+    }
+
+    public function testXmlFormatter()
+    {
+        $request = Factory::createServerRequest('GET', '/');
+        $request = $request->withheader('Accept', 'text/xml');
+
+        $response = Dispatcher::run([
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\XmlFormatter()),
+            function ($request) {
+                throw new Exception('Something went wrong');
+            },
+        ], $request);
+
+        $this->assertEquals('text/xml', $response->getHeaderLine('Content-Type'));
     }
 }
