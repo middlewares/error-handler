@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
 - Use `phpstan` as a dev dependency to detect bugs
+
+### Changed
+
+- Always catches exceptions
+- Create separate classes for error formatters
+- Allow any number of formatters to be used
+- Allow any exception to define HTTP status code
 
 ## [1.2.0] - 2018-08-04
 

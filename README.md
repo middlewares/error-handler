@@ -7,13 +7,11 @@
 [![Total Downloads][ico-downloads]][link-downloads]
 [![SensioLabs Insight][ico-sensiolabs]][link-sensiolabs]
 
-Middleware to execute a handler if the response returned by the next middlewares has any error (status code 400-599) or throws a `Middlewares\HttpErrorException`.
-
-This package provides the `Middlewares\HttpErrorException` that you can use to send context-related data to the error handler. The methods `setContext(array $data)` and `getContext()` methods allows to assign and retrieve the error context data used in the error handler.
+Middleware to catch and format errors encountered while handling the request.
 
 ## Requirements
 
-* PHP >= 7.0
+* PHP >= 7.1
 * A [PSR-7 http library](https://github.com/middlewares/awesome-psr15-middlewares#psr-7-implementations)
 * A [PSR-15 middleware dispatcher](https://github.com/middlewares/awesome-psr15-middlewares#dispatcher)
 
@@ -21,81 +19,54 @@ This package provides the `Middlewares\HttpErrorException` that you can use to s
 
 This package is installable and autoloadable via Composer as [middlewares/error-handler](https://packagist.org/packages/middlewares/error-handler).
 
-```sh
+```shell
 composer require middlewares/error-handler
 ```
 
 ## Example
 
 ```php
-use Interop\Http\Server\RequestHandlerInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+use Middlewares\ErrorFormatter;
+use Middlewares\ErrorHandler;
+use Middlewares\Utils\Dispatcher;
 
-class ErrorRequestHandler implements RequestHandlerInterface
-{
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        //Get the error info as an instance of Middlewares\HttpErrorException
-        $error = $request->getAttribute('error');
+// Create a new ErrorHandler instance
+$errorHandler = new ErrorHandler();
 
-        //The error can contains context data that you can use, for example for PSR-3 loggin
-        Logger::error("There's an error", $error->getContext());
+// Any number of formatters can be added. One will be picked based on the Accept
+// header of the request. If no formatter matches, the PlainFormatter will be used.
+$errorHandler->addFormatters(
+    new ErrorFormatter\GifFormatter(),
+    new ErrorFormatter\HtmlFormatter()
+    new ErrorFormatter\JpegFormatter(),
+    new ErrorFormatter\JsonFormatter(),
+    new ErrorFormatter\PngFormatter(),
+    new ErrorFormatter\SvgFormatter(),
+    new ErrorFormatter\XmlFormatter(),
+);
 
-        //Any output is captured and added to the response's body
-        echo $error->getMessage();
-
-        return (new Response())->withStatus($error->getCode());
-    }
-}
-
+// ErrorHandler should always be the first middleware in the stack!
 $dispatcher = new Dispatcher([
-    new Middlewares\ErrorHandler(new ErrorRequestHandler()),
-
-    function ($request, $next) {
-        $user = Session::signup($request);
-
-        if ($user->isNotAllowed()) {
-            //Send an exception adding context data
-            throw Middlewares\HttpErrorException::create(401, [
-                'user' => $user,
-                'request' => $request
-            ]);
-        }
-
-        return $next($request);
+    $errorHandler,
+    // ...
+    function ($request) {
+        throw HttpErrorException::create(404);
     }
 ]);
 
-$response = $dispatcher->dispatch(new ServerRequest());
+$request = $serverRequestFactory->createServerRequest('GET', '/');
+$response = $dispatcher->dispatch($request);
 ```
 
 ## Options
 
-#### `__construct(Interop\Http\Server\RequestHandlerInterface $handler = null)`
+### `__construct(ResponseFactoryInterface $responseFactory = null, StreamFactoryInterface $streamFactory = null)`
 
-The request handler used to generate the response. If it's not provided, use [the default](src/ErrorHandlerDefault.php) that provides different outputs for different formats.
+Provide a specific response and stream factory. If not provided, will be detected based on available PSR-17 implementations.
 
-#### `catchExceptions(true)`
+### `addFormatters(FormatterInterface ...$formatters)`
 
-Used to catch also other exceptions than `Middlewares\HttpErrorException` and create `500` error responses. Disabled by default.
-
-#### `statusCode(callable $statusCodeValidator)`
-
-By default, all responses with status code between 400-599 are interpreted as error responses. But it's possible to change this behaviour, to handle, for example, only 404 errors providing a validator:
-
-```php
-$dispatcher = new Dispatcher([
-    (new Middlewares\ErrorHandler($handler))
-        ->statusCode(function ($code) {
-            return $code === 404; //handle only 404 errors
-        })
-]);
-```
-
-#### `attribute(string $attribute)`
-
-The attribute name used to store the instance of `Middlewares\HttpErrorException` with the error info in the server request. By default is `error`.
+Add additional error [formatters](src/Formatter). Default is `PlainFormatter`.
 
 ---
 

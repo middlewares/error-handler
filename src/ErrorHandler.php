@@ -1,120 +1,99 @@
 <?php
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Middlewares;
 
+use Middlewares\ErrorFormatter\FormatterInterface;
+use Middlewares\ErrorFormatter\PlainFormatter;
+use Middlewares\Utils\Factory;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Throwable;
 
 class ErrorHandler implements MiddlewareInterface
 {
-    private $handler;
+    /** @var ResponseFactoryInterface */
+    private $responseFactory;
 
-    /**
-     * @var callable|null The status code validator
-     */
-    private $statusCodeValidator;
+    /** @var StreamFactoryInterface */
+    private $streamFactory;
 
-    /**
-     * @var bool Whether or not catch exceptions
-     */
-    private $catchExceptions = false;
+    /** @var FormatterInterface[] */
+    private $formatters = [];
 
-    /**
-     * @var string The attribute name
-     */
-    private $attribute = 'error';
-
-    public function __construct(RequestHandlerInterface $handler = null)
-    {
-        $this->handler = $handler;
+    public function __construct(
+        ResponseFactoryInterface $responseFactory = null,
+        StreamFactoryInterface $streamFactory = null
+    ) {
+        $this->responseFactory = $responseFactory ?? Factory::getResponseFactory();
+        $this->streamFactory = $streamFactory ?? Factory::getStreamFactory();
     }
 
     /**
-     * Configure the catchExceptions.
+     * Add additional error formatters
      */
-    public function catchExceptions(bool $catch = true): self
+    public function addFormatters(FormatterInterface ...$formatters): self
     {
-        $this->catchExceptions = (bool) $catch;
+        foreach ($formatters as $formatter) {
+            foreach ($formatter->contentTypes() as $contentType) {
+                $this->formatters[$contentType] = $formatter;
+            }
+        }
 
         return $this;
     }
 
-    /**
-     * Configure the status code validator.
-     */
-    public function statusCode(callable $statusCodeValidator): self
-    {
-        $this->statusCodeValidator = $statusCodeValidator;
-
-        return $this;
-    }
-
-    /**
-     * Set the attribute name to store the error info.
-     */
-    public function attribute(string $attribute): self
-    {
-        $this->attribute = $attribute;
-
-        return $this;
-    }
-
-    /**
-     * Process a server request and return a response.
-     */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        ob_start();
-        $level = ob_get_level();
-
         try {
-            $response = $handler->handle($request);
-
-            if ($this->isError($response->getStatusCode())) {
-                $exception = new HttpErrorException($response->getReasonPhrase(), $response->getStatusCode());
-                return $this->handleError($request, $exception);
-            }
-
-            return $response;
-        } catch (HttpErrorException $exception) {
-            return $this->handleError($request, $exception);
-        } catch (Throwable $exception) {
-            if (!$this->catchExceptions) {
-                throw $exception;
-            }
-
-            return $this->handleError($request, HttpErrorException::create(500, [], $exception));
-        } finally {
-            while (ob_get_level() >= $level) {
-                ob_end_clean();
-            }
+            return $handler->handle($request);
+        } catch (Throwable $e) {
+            list($contentType, $formatter) = $this->errorFormatter($request);
+            return $this->errorResponse($formatter, $e, $contentType);
         }
     }
 
-    /**
-     * Execute the error handler.
-     */
-    private function handleError(ServerRequestInterface $request, HttpErrorException $exception): ResponseInterface
+    protected function errorFormatter(ServerRequestInterface $request): array
     {
-        $request = $request->withAttribute($this->attribute, $exception);
-        $handler = $this->handler ?: new ErrorHandlerDefault();
+        $accept = $request->getHeaderLine('Accept');
 
-        return $handler->handle($request);
-    }
-
-    /**
-     * Check whether the status code represents an error or not.
-     */
-    private function isError(int $statusCode): bool
-    {
-        if ($this->statusCodeValidator) {
-            return call_user_func($this->statusCodeValidator, $statusCode);
+        foreach ($this->formatters as $type => $formatter) {
+            if (stripos($accept, $type) !== false) {
+                return [$type, $formatter];
+            }
         }
 
-        return $statusCode >= 400 && $statusCode < 600;
+        return ['text/plain', new PlainFormatter()];
+    }
+
+    protected function errorResponse(
+        FormatterInterface $formatter,
+        Throwable $e,
+        string $contentType
+    ): ResponseInterface {
+        $responseBody = $this->streamFactory->createStream($formatter->format($e));
+
+        $response = $this->responseFactory->createResponse($this->errorStatus($e));
+        $response = $response->withHeader('Content-Type', $contentType);
+        $response = $response->withBody($responseBody);
+
+        return $response;
+    }
+
+    protected function errorStatus(Throwable $e): int
+    {
+        if ($e instanceof HttpErrorException) {
+            return $e->getCode();
+        }
+
+        if (method_exists($e, 'getStatusCode')) {
+            return $e->getStatusCode();
+        }
+
+        return 500;
     }
 }
