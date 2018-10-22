@@ -12,7 +12,10 @@ use Throwable;
 
 abstract class AbstractFormatter implements FormatterInterface
 {
+    /** @var ResponseFactoryInterface */
     protected $responseFactory;
+
+    /** @var string[] */
     protected $contentTypes = [];
 
     public function __construct(
@@ -23,15 +26,7 @@ abstract class AbstractFormatter implements FormatterInterface
 
     public function isValid(Throwable $error, ServerRequestInterface $request): bool
     {
-        $accept = $request->getHeaderLine('Accept');
-
-        foreach ($this->contentTypes as $type) {
-            if (stripos($accept, $type) !== false) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->getContentType($request) ? true : false;
     }
 
     abstract protected function format(Throwable $error): string;
@@ -39,10 +34,11 @@ abstract class AbstractFormatter implements FormatterInterface
     public function handle(Throwable $error, ServerRequestInterface $request): ResponseInterface
     {
         $response = $this->responseFactory->createResponse($this->errorStatus($error));
-        $response = $response->withHeader('Content-Type', $this->contentTypes[0]);
         $response->getBody()->write($this->format($error));
 
-        return $response;
+        $contentType = $this->getContentType($request);
+
+        return $response->withHeader('Content-Type', $contentType ? $contentType : $this->contentTypes[0]);
     }
 
     protected function errorStatus(Throwable $e): int
@@ -56,5 +52,19 @@ abstract class AbstractFormatter implements FormatterInterface
         }
 
         return 500;
+    }
+
+    /**
+     * @return string|null
+     */
+    protected function getContentType(ServerRequestInterface $request)
+    {
+        $accept = $request->getHeaderLine('Accept');
+
+        foreach ($this->contentTypes as $type) {
+            if (stripos($accept, $type) !== false) {
+                return $type;
+            }
+        }
     }
 }
