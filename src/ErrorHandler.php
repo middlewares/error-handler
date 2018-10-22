@@ -27,7 +27,7 @@ class ErrorHandler implements MiddlewareInterface
     public function __construct(array $formatters = [])
     {
         $this->addFormatters(...$formatters);
-        $this->defaultFormatter = new PlainFormatter();
+        $this->defaultFormatter(new PlainFormatter());
     }
 
     /**
