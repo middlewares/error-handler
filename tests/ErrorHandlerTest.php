@@ -44,7 +44,7 @@ class ErrorHandlerTest extends TestCase
         $response = Dispatcher::run([
             new ErrorHandler(),
             function ($request) {
-                throw new class extends Exception {
+                throw new class() extends Exception {
                     public function getStatusCode(): int
                     {
                         return 418;

@@ -1,20 +1,17 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
 use Throwable;
 
-class HtmlFormatter implements FormatterInterface
+class HtmlFormatter extends AbstractFormatter
 {
-    public function contentTypes(): array
-    {
-        return [
-            'text/html',
-        ];
-    }
+    protected $contentTypes = [
+        'text/html',
+    ];
 
-    public function format(Throwable $error): string
+    protected function format(Throwable $error): string
     {
         $type = get_class($error);
         $code = $error->getCode();

@@ -1,20 +1,17 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
 use Throwable;
 
-class SvgFormatter implements FormatterInterface
+class SvgFormatter extends AbstractFormatter
 {
-    public function contentTypes(): array
-    {
-        return [
-            'image/svg+xml',
-        ];
-    }
+    protected $contentTypes = [
+        'image/svg+xml',
+    ];
 
-    public function format(Throwable $error): string
+    protected function format(Throwable $error): string
     {
         $type = get_class($error);
         $code = $error->getCode();
