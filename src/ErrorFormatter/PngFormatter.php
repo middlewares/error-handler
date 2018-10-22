@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
@@ -7,14 +7,11 @@ use Throwable;
 
 class PngFormatter extends AbstractImageFormatter
 {
-    public function contentTypes(): array
-    {
-        return [
-            'image/png',
-        ];
-    }
+    protected $contentTypes = [
+        'image/png',
+    ];
 
-    public function format(Throwable $error): string
+    protected function format(Throwable $error): string
     {
         ob_start();
         imagepng($this->createImage($error));
