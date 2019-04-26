@@ -37,7 +37,7 @@ $errorHandler = new ErrorHandler();
 // header of the request. If no formatter matches, the PlainFormatter will be used.
 $errorHandler->addFormatters(
     new ErrorFormatter\GifFormatter(),
-    new ErrorFormatter\HtmlFormatter()
+    new ErrorFormatter\HtmlFormatter(),
     new ErrorFormatter\JpegFormatter(),
     new ErrorFormatter\JsonFormatter(),
     new ErrorFormatter\PngFormatter(),
