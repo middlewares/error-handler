@@ -1,11 +1,11 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
 use Throwable;
 
-abstract class AbstractImageFormatter implements FormatterInterface
+abstract class AbstractImageFormatter extends AbstractFormatter
 {
     /**
      * Create an image resource from an error

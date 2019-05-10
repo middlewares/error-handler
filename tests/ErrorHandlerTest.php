@@ -6,7 +6,7 @@ namespace Middlewares\Tests;
 use Exception;
 use Middlewares\ErrorFormatter;
 use Middlewares\ErrorHandler;
-use Middlewares\HttpErrorException;
+use Middlewares\Utils\HttpErrorException;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
@@ -44,7 +44,7 @@ class ErrorHandlerTest extends TestCase
         $response = Dispatcher::run([
             new ErrorHandler(),
             function ($request) {
-                throw new class extends Exception {
+                throw new class() extends Exception {
                     public function getStatusCode(): int
                     {
                         return 418;

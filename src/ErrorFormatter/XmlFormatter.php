@@ -1,20 +1,17 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
 use Throwable;
 
-class XmlFormatter implements FormatterInterface
+class XmlFormatter extends AbstractFormatter
 {
-    public function contentTypes(): array
-    {
-        return [
-            'text/xml',
-        ];
-    }
+    protected $contentTypes = [
+        'text/xml',
+    ];
 
-    public function format(Throwable $error): string
+    protected function format(Throwable $error): string
     {
         $type = get_class($error);
         $code = $error->getCode();

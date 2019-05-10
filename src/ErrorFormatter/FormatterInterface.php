@@ -1,21 +1,21 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 
 interface FormatterInterface
 {
     /**
-     * Get supported content types
-     *
-     * @return string[]
+     * Check whether the error can be handled by this formatter
      */
-    public function contentTypes(): array;
+    public function isValid(Throwable $error, ServerRequestInterface $request): bool;
 
     /**
-     * Format an error as a string
+     * Create a response with this error
      */
-    public function format(Throwable $error): string;
+    public function handle(Throwable $error, ServerRequestInterface $request): ResponseInterface;
 }
