@@ -1,20 +1,17 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
 use Throwable;
 
-class JsonFormatter implements FormatterInterface
+class JsonFormatter extends AbstractFormatter
 {
-    public function contentTypes(): array
-    {
-        return [
-            'application/json'
-        ];
-    }
+    protected $contentTypes = [
+        'application/json',
+    ];
 
-    public function format(Throwable $error): string
+    protected function format(Throwable $error): string
     {
         $json = [
             'type' => get_class($error),
@@ -22,6 +19,6 @@ class JsonFormatter implements FormatterInterface
             'message' => $error->getMessage(),
         ];
 
-        return json_encode($json);
+        return (string) json_encode($json);
     }
 }

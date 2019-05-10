@@ -1,5 +1,5 @@
 <?php
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
@@ -7,17 +7,14 @@ use Throwable;
 
 class JpegFormatter extends AbstractImageFormatter
 {
-    public function contentTypes(): array
-    {
-        return [
-            'image/jpeg',
-        ];
-    }
+    protected $contentTypes = [
+        'image/jpeg',
+    ];
 
-    public function format(Throwable $error): string
+    protected function format(Throwable $error): string
     {
         ob_start();
         imagejpeg($this->createImage($error));
-        return ob_get_clean();
+        return (string) ob_get_clean();
     }
 }

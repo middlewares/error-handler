@@ -11,7 +11,7 @@ Middleware to catch and format errors encountered while handling the request.
 
 ## Requirements
 
-* PHP >= 7.1
+* PHP >= 7.0
 * A [PSR-7 http library](https://github.com/middlewares/awesome-psr15-middlewares#psr-7-implementations)
 * A [PSR-15 middleware dispatcher](https://github.com/middlewares/awesome-psr15-middlewares#dispatcher)
 
@@ -31,11 +31,9 @@ use Middlewares\ErrorHandler;
 use Middlewares\Utils\Dispatcher;
 
 // Create a new ErrorHandler instance
-$errorHandler = new ErrorHandler();
-
 // Any number of formatters can be added. One will be picked based on the Accept
 // header of the request. If no formatter matches, the PlainFormatter will be used.
-$errorHandler->addFormatters(
+$errorHandler = new ErrorHandler([
     new ErrorFormatter\GifFormatter(),
     new ErrorFormatter\HtmlFormatter(),
     new ErrorFormatter\JpegFormatter(),
@@ -43,7 +41,9 @@ $errorHandler->addFormatters(
     new ErrorFormatter\PngFormatter(),
     new ErrorFormatter\SvgFormatter(),
     new ErrorFormatter\XmlFormatter(),
-);
+]);
+
+$errorHandler->defaultFormatter(new ErrorFormatter\PlainFormatter());
 
 // ErrorHandler should always be the first middleware in the stack!
 $dispatcher = new Dispatcher([
@@ -60,14 +60,13 @@ $response = $dispatcher->dispatch($request);
 
 ## Options
 
-### `__construct(ResponseFactoryInterface $responseFactory = null, StreamFactoryInterface $streamFactory = null)`
+### `__construct(array $formatters [])`
 
-Provide a specific response and stream factory. If not provided, will be detected based on available PSR-17 implementations.
+Add the [formatters](src/Formatter) to be used (instances of `Middlewares\ErrorFormatter\FormatterInterface`).
 
-### `addFormatters(FormatterInterface ...$formatters)`
+### `defaultFormatter(FormatterInterface $defaultFormatter)`
 
-Add additional error [formatters](src/Formatter). Default is `PlainFormatter`.
-
+Set the default formatter if no content-type matches (by default is `PlainFormatter`).
 ---
 
 Please see [CHANGELOG](CHANGELOG.md) for more information about recent changes and [CONTRIBUTING](CONTRIBUTING.md) for contributing details.
