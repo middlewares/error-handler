@@ -19,6 +19,6 @@ class JsonFormatter extends AbstractFormatter
             'message' => $error->getMessage(),
         ];
 
-        return json_encode($json);
+        return (string) json_encode($json);
     }
 }
