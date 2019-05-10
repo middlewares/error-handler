@@ -6,7 +6,7 @@ namespace Middlewares\Tests;
 use Exception;
 use Middlewares\ErrorFormatter;
 use Middlewares\ErrorHandler;
-use Middlewares\HttpErrorException;
+use Middlewares\Utils\HttpErrorException;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use PHPUnit\Framework\TestCase;
