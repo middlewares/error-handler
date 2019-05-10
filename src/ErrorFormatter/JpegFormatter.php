@@ -15,6 +15,6 @@ class JpegFormatter extends AbstractImageFormatter
     {
         ob_start();
         imagejpeg($this->createImage($error));
-        return ob_get_clean();
+        return (string) ob_get_clean();
     }
 }

@@ -15,6 +15,6 @@ class PngFormatter extends AbstractImageFormatter
     {
         ob_start();
         imagepng($this->createImage($error));
-        return ob_get_clean();
+        return (string) ob_get_clean();
     }
 }

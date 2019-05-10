@@ -15,6 +15,6 @@ class GifFormatter extends AbstractImageFormatter
     {
         ob_start();
         imagegif($this->createImage($error));
-        return ob_get_clean();
+        return (string) ob_get_clean();
     }
 }
