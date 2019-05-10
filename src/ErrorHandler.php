@@ -17,7 +17,7 @@ class ErrorHandler implements MiddlewareInterface
     private $formatters = [];
 
     /** @var FormatterInterface */
-    private $defaultFormatter = [];
+    private $defaultFormatter;
 
     /**
      * Configure the error formatters
