@@ -5,14 +5,40 @@ namespace Middlewares\ErrorFormatter;
 
 use Throwable;
 
-abstract class AbstractImageFormatter extends AbstractFormatter
+class ImageFormatter extends AbstractFormatter
 {
+    protected $contentTypes = [
+        'image/gif',
+        'image/jpeg',
+        'image/png',
+    ];
+
+    protected function format(Throwable $error, string $contentType): string
+    {
+        ob_start();
+        $image = $this->createImage($error);
+
+        switch ($contentType) {
+            case 'image/gif':
+                imagegif($image);
+                break;
+            case 'image/jpeg':
+                imagejpeg($image);
+                break;
+            case 'image/png':
+                imagepng($image);
+                break;
+        }
+
+        return (string) ob_get_clean();
+    }
+
     /**
      * Create an image resource from an error
      *
      * @return resource
      */
-    protected function createImage(Throwable $error)
+    private function createImage(Throwable $error)
     {
         $type = get_class($error);
         $code = $error->getCode();

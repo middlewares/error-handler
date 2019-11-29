@@ -62,7 +62,7 @@ class ErrorHandlerTest extends TestCase
         $request = $request->withheader('Accept', 'image/gif');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\GifFormatter()),
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\ImageFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -92,7 +92,7 @@ class ErrorHandlerTest extends TestCase
         $request = $request->withheader('Accept', 'image/jpeg');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\JpegFormatter()),
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\ImageFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -137,7 +137,7 @@ class ErrorHandlerTest extends TestCase
         $request = $request->withheader('Accept', 'image/png');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\PngFormatter()),
+            (new ErrorHandler())->addFormatters(new ErrorFormatter\ImageFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },

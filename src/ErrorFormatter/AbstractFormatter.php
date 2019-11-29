@@ -35,17 +35,15 @@ abstract class AbstractFormatter implements FormatterInterface
         return $this->getContentType($request) ? true : false;
     }
 
-    abstract protected function format(Throwable $error): string;
+    abstract protected function format(Throwable $error, string $contentType): string;
 
     public function handle(Throwable $error, ServerRequestInterface $request): ResponseInterface
     {
+        $contentType = $this->getContentType($request) ?: $this->contentTypes[0];
         $response = $this->responseFactory->createResponse($this->errorStatus($error));
-        $body = $this->streamFactory->createStream($this->format($error));
-        $response = $response->withBody($body);
+        $body = $this->streamFactory->createStream($this->format($error, $contentType));
 
-        $contentType = $this->getContentType($request);
-
-        return $response->withHeader('Content-Type', $contentType ? $contentType : $this->contentTypes[0]);
+        return $response->withBody($body)->withHeader('Content-Type', $contentType);
     }
 
     protected function errorStatus(Throwable $error): int
@@ -61,10 +59,7 @@ abstract class AbstractFormatter implements FormatterInterface
         return 500;
     }
 
-    /**
-     * @return string|null
-     */
-    protected function getContentType(ServerRequestInterface $request)
+    protected function getContentType(ServerRequestInterface $request): ?string
     {
         $accept = $request->getHeaderLine('Accept');
 
@@ -73,5 +68,7 @@ abstract class AbstractFormatter implements FormatterInterface
                 return $type;
             }
         }
+
+        return null;
     }
 }
