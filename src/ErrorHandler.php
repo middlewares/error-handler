@@ -4,7 +4,6 @@ declare(strict_types = 1);
 namespace Middlewares;
 
 use Middlewares\ErrorFormatter\FormatterInterface;
-use Middlewares\ErrorFormatter\PlainFormatter;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -21,8 +20,19 @@ class ErrorHandler implements MiddlewareInterface
      *
      * @param FormatterInterface[] $formatters
      */
-    public function __construct(array $formatters = [])
+    public function __construct(array $formatters = null)
     {
+        if (empty($formatters)) {
+            $formatters = [
+                new ErrorFormatter\PlainFormatter(),
+                new ErrorFormatter\HtmlFormatter(),
+                new ErrorFormatter\ImageFormatter(),
+                new ErrorFormatter\JsonFormatter(),
+                new ErrorFormatter\SvgFormatter(),
+                new ErrorFormatter\XmlFormatter(),
+            ];
+        }
+
         $this->addFormatters(...$formatters);
     }
 
@@ -49,7 +59,7 @@ class ErrorHandler implements MiddlewareInterface
                 }
             }
 
-            $default = current($this->formatters);
+            $default = reset($this->formatters);
 
             return $default->handle($error, $request);
         }
