@@ -1,6 +1,4 @@
 vendor
 composer.lock
-.php_cs.cache
-build
 coverage
-.phpunit.result.cache
+*.cache
