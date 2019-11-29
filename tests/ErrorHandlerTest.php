@@ -6,9 +6,9 @@ namespace Middlewares\Tests;
 use Exception;
 use Middlewares\ErrorFormatter;
 use Middlewares\ErrorHandler;
-use Middlewares\Utils\HttpErrorException;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
+use Middlewares\Utils\HttpErrorException;
 use PHPUnit\Framework\TestCase;
 
 class ErrorHandlerTest extends TestCase
@@ -24,7 +24,7 @@ class ErrorHandlerTest extends TestCase
 
         $this->assertEquals(500, $response->getStatusCode());
         $this->assertEquals('text/plain', $response->getHeaderLine('Content-Type'));
-        $this->assertContains('Something went wrong', (string) $response->getBody());
+        $this->assertStringContainsString('Something went wrong', (string) $response->getBody());
     }
 
     public function testHttpException()

@@ -8,7 +8,7 @@ use Throwable;
 class XmlFormatter extends AbstractFormatter
 {
     protected $contentTypes = [
-        'text/xml', 'application/xml', 'application/x-xml'
+        'text/xml', 'application/xml', 'application/x-xml',
     ];
 
     protected function format(Throwable $error): string
