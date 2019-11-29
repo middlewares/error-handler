@@ -67,9 +67,7 @@ $errorHandler = new ErrorHandler([
 ]);
 ```
 
-### defaultFormatter
-
-Set the default formatter if no content-type matches (by default is `PlainFormatter`).
+**Note:** If no formatter is found, the first value of the array will be used. In the example above, `HtmlFormatter`.
 
 ---
 

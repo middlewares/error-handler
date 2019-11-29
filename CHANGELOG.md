@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 - Support for PHP 7.0 and 7.1
+- `defaultFormatter` option. De first value of the array of formatters will be used as default
 
 ## [2.0.0] - 2019-05-10
 ### Added

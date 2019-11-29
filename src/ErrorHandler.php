@@ -16,9 +16,6 @@ class ErrorHandler implements MiddlewareInterface
     /** @var FormatterInterface[] */
     private $formatters = [];
 
-    /** @var FormatterInterface */
-    private $defaultFormatter;
-
     /**
      * Configure the error formatters
      *
@@ -27,7 +24,6 @@ class ErrorHandler implements MiddlewareInterface
     public function __construct(array $formatters = [])
     {
         $this->addFormatters(...$formatters);
-        $this->defaultFormatter(new PlainFormatter());
     }
 
     /**
@@ -38,16 +34,6 @@ class ErrorHandler implements MiddlewareInterface
         foreach ($formatters as $formatter) {
             $this->formatters[] = $formatter;
         }
-
-        return $this;
-    }
-
-    /**
-     * Set the default formatter
-     */
-    public function defaultFormatter(FormatterInterface $defaultFormatter): self
-    {
-        $this->defaultFormatter = $defaultFormatter;
 
         return $this;
     }
@@ -63,7 +49,9 @@ class ErrorHandler implements MiddlewareInterface
                 }
             }
 
-            return $this->defaultFormatter->handle($error, $request);
+            $default = current($this->formatters);
+
+            return $default->handle($error, $request);
         }
     }
 }
