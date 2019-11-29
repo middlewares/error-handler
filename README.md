@@ -58,7 +58,7 @@ $response = $dispatcher->dispatch($request);
 
 ## Usage
 
-Add the [formatters](src/Formatter) to be used (instances of `Middlewares\ErrorFormatter\FormatterInterface`).
+Add the [formatters](src/Formatter) to be used (instances of `Middlewares\ErrorFormatter\FormatterInterface`). If no formatters are provided, use all available.
 
 ```php
 $errorHandler = new ErrorHandler([

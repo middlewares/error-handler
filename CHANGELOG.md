@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [3.0.0] - 2019-11-29
 ### Changed
 - Merged `JpegFormatter`, `GifFormatter` and `PngFormatter` in one `ImageFormatter`.
+- By default, all formatters are used.
 
 ### Removed
 - Support for PHP 7.0 and 7.1
