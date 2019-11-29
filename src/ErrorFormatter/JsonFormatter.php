@@ -11,7 +11,7 @@ class JsonFormatter extends AbstractFormatter
         'application/json',
     ];
 
-    protected function format(Throwable $error): string
+    protected function format(Throwable $error, string $contentType): string
     {
         $json = [
             'type' => get_class($error),

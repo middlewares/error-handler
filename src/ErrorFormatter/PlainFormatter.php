@@ -11,7 +11,7 @@ class PlainFormatter extends AbstractFormatter
         'text/plain',
     ];
 
-    protected function format(Throwable $error): string
+    protected function format(Throwable $error, string $contentType): string
     {
         return sprintf("%s %s\n%s", get_class($error), $error->getCode(), $error->getMessage());
     }

@@ -11,7 +11,7 @@ class SvgFormatter extends AbstractFormatter
         'image/svg+xml',
     ];
 
-    protected function format(Throwable $error): string
+    protected function format(Throwable $error, string $contentType): string
     {
         $type = get_class($error);
         $code = $error->getCode();
