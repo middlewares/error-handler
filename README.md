@@ -33,11 +33,10 @@ use Middlewares\Utils\Dispatcher;
 // Any number of formatters can be added. One will be picked based on the Accept
 // header of the request. If no formatter matches, the PlainFormatter will be used.
 $errorHandler = new ErrorHandler([
-    new ErrorFormatter\GifFormatter(),
     new ErrorFormatter\HtmlFormatter(),
-    new ErrorFormatter\JpegFormatter(),
+    new ErrorFormatter\ImageFormatter(),
     new ErrorFormatter\JsonFormatter(),
-    new ErrorFormatter\PngFormatter(),
+    new ErrorFormatter\PlainFormatter(),
     new ErrorFormatter\SvgFormatter(),
     new ErrorFormatter\XmlFormatter(),
 ]);
