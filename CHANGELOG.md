@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.0.0] - 2019-11-29
+### Added
+- Support for webp responses under the `ImageFormatter` error handler
+
 ### Changed
 - Merged `JpegFormatter`, `GifFormatter` and `PngFormatter` in one `ImageFormatter`.
 - By default, all formatters are used.

@@ -11,6 +11,7 @@ class ImageFormatter extends AbstractFormatter
         'image/gif',
         'image/jpeg',
         'image/png',
+        'image/webp',
     ];
 
     protected function format(Throwable $error, string $contentType): string
@@ -27,6 +28,9 @@ class ImageFormatter extends AbstractFormatter
                 break;
             case 'image/png':
                 imagepng($image);
+                break;
+            case 'image/webp':
+                imagewebp($image);
                 break;
         }
 
