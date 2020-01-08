@@ -41,8 +41,6 @@ $errorHandler = new ErrorHandler([
     new ErrorFormatter\XmlFormatter(),
 ]);
 
-$errorHandler->defaultFormatter(new ErrorFormatter\PlainFormatter());
-
 // ErrorHandler should always be the first middleware in the stack!
 $dispatcher = new Dispatcher([
     $errorHandler,
