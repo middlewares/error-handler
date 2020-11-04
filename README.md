@@ -31,7 +31,8 @@ use Middlewares\Utils\Dispatcher;
 
 // Create a new ErrorHandler instance
 // Any number of formatters can be added. One will be picked based on the Accept
-// header of the request. If no formatter matches, the PlainFormatter will be used.
+// header of the request. If no formatter matches, the first formatter in the array
+// will be used.
 $errorHandler = new ErrorHandler([
     new ErrorFormatter\HtmlFormatter(),
     new ErrorFormatter\ImageFormatter(),
