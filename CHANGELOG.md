@@ -1,9 +1,12 @@
 # Change Log
-
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
+
+## [3.0.2] - 2024-12-05
+### Fixed
+- Support for PHP 8.4
 
 ## [3.0.1] - 2020-12-03
 ### Added
@@ -105,11 +108,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed the handler signature to `function(ServerRequestInterface $request)`.
 - The error info is passed to the handler using an array stored in the request attribute `error`.
 
-## 0.1.0 - 2016-10-03
+## [0.1.0] - 2016-10-03
 First version
 
 [#9]: https://github.com/middlewares/error-handler/issues/9
 
+[3.0.2]: https://github.com/middlewares/error-handler/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/middlewares/error-handler/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/middlewares/error-handler/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/middlewares/error-handler/compare/v1.2.0...v2.0.0
@@ -124,3 +128,4 @@ First version
 [0.4.0]: https://github.com/middlewares/error-handler/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/middlewares/error-handler/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/middlewares/error-handler/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/middlewares/error-handler/releases/tag/v0.1.0
