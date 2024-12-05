@@ -44,15 +44,15 @@ jobs:
                 - 7.2
                 - 7.3
                 - 7.4
-              composer-args: [ "" ]
-              include:
-                - php: 8.0
-                  composer-args: --ignore-platform-reqs
-            fail-fast: false
+                - 8.0
+                - 8.1
+                - 8.2
+                - 8.3
+                - 8.4
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
 
             - name: Install PHP
               uses: shivammathur/setup-php@v2
@@ -60,14 +60,14 @@ jobs:
                   php-version: ${{ matrix.php }}
 
             - name: Cache PHP dependencies
-              uses: actions/cache@v2
+              uses: actions/cache@v4
               with:
                   path: vendor
                   key: ${{ runner.os }}-php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.json') }}
                   restore-keys: ${{ runner.os }}-php-${{ matrix.php }}-composer-
 
             - name: Install dependencies
-              run: composer install --prefer-dist --no-progress ${{ matrix.composer-args }}
+              run: composer install --prefer-dist --no-progress
 
             - name: Tests
               run: composer test
