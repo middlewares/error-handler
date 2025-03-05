@@ -56,6 +56,28 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals(418, $response->getStatusCode());
     }
 
+    public function testNotAllowedException()
+    {
+        $response = Dispatcher::run([
+            new ErrorHandler(),
+            function ($request) {
+                throw new class() extends Exception {
+                    public function getStatusCode(): int
+                    {
+                        return 405;
+                    }
+                    public function getContext(): array
+                    {
+                        return ['allow' => ['GET', 'POST']];
+                    }
+                };
+            },
+        ]);
+
+        $this->assertEquals(405, $response->getStatusCode());
+        $this->assertEquals('GET, POST', $response->getHeaderLine('Allow'));
+    }
+
     public function testGifFormatter()
     {
         $request = Factory::createServerRequest('GET', '/');

@@ -43,7 +43,13 @@ abstract class AbstractFormatter implements FormatterInterface
         $response = $this->responseFactory->createResponse($this->errorStatus($error));
         $body = $this->streamFactory->createStream($this->format($error, $contentType));
 
-        return $response->withBody($body)->withHeader('Content-Type', $contentType);
+        $response = $response->withBody($body)->withHeader('Content-Type', $contentType);
+
+        if (405 == $response->getStatusCode() && $allow = $this->allow($error)) {
+            $response = $response->withHeader('Allow', implode(', ', $allow));
+        }
+
+        return $response;
     }
 
     protected function errorStatus(Throwable $error): int
@@ -57,6 +63,16 @@ abstract class AbstractFormatter implements FormatterInterface
         }
 
         return 500;
+    }
+
+    protected function allow(Throwable $error): ?array
+    {
+        if (method_exists($error, 'getContext')) {
+            $context = $error->getContext();
+            return isset($context['allow']) ? (array) $context['allow'] : null;
+        }
+
+        return null;
     }
 
     protected function getContentType(ServerRequestInterface $request): ?string
