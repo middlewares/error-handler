@@ -23,8 +23,8 @@ abstract class AbstractFormatter implements FormatterInterface
     protected $contentTypes = [];
 
     public function __construct(
-        ResponseFactoryInterface $responseFactory = null,
-        StreamFactoryInterface $streamFactory = null
+        ?ResponseFactoryInterface $responseFactory = null,
+        ?StreamFactoryInterface $streamFactory = null
     ) {
         $this->responseFactory = $responseFactory ?? Factory::getResponseFactory();
         $this->streamFactory = $streamFactory ?? Factory::getStreamFactory();

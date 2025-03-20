@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
+use GdImage;
 use Throwable;
 
 class ImageFormatter extends AbstractFormatter
@@ -40,7 +41,7 @@ class ImageFormatter extends AbstractFormatter
     /**
      * Create an image resource from an error
      *
-     * @return resource
+     * @return GdImage
      */
     private function createImage(Throwable $error)
     {
