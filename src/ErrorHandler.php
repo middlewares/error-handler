@@ -3,13 +3,13 @@ declare(strict_types = 1);
 
 namespace Middlewares;
 
-use Middlewares\ErrorFormatter\PlainFormatter;
+use Middlewares\ErrorFormatter\FormatterInterface;
 use Middlewares\ErrorFormatter\HtmlFormatter;
 use Middlewares\ErrorFormatter\ImageFormatter;
 use Middlewares\ErrorFormatter\JsonFormatter;
+use Middlewares\ErrorFormatter\PlainFormatter;
 use Middlewares\ErrorFormatter\SvgFormatter;
 use Middlewares\ErrorFormatter\XmlFormatter;
-use Middlewares\ErrorFormatter\FormatterInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -65,6 +65,7 @@ class ErrorHandler implements MiddlewareInterface
                 }
             }
 
+            /** @var FormatterInterface $default */
             $default = reset($this->formatters);
 
             return $default->handle($error, $request);

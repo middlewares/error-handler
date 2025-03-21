@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace Middlewares\ErrorFormatter;
 
-use GdImage;
 use Throwable;
 
 class ImageFormatter extends AbstractFormatter
@@ -41,7 +40,7 @@ class ImageFormatter extends AbstractFormatter
     /**
      * Create an image resource from an error
      *
-     * @return GdImage
+     * @return resource
      */
     private function createImage(Throwable $error)
     {
@@ -52,9 +51,13 @@ class ImageFormatter extends AbstractFormatter
         $size = 200;
         $image = imagecreatetruecolor($size, $size);
         $textColor = imagecolorallocate($image, 255, 255, 255);
+
+        /* @phpstan-ignore-next-line */
         imagestring($image, 5, 10, 10, "$type $code", $textColor);
 
+        /* @phpstan-ignore-next-line */
         foreach (str_split($message, intval($size / 10)) as $line => $text) {
+            /* @phpstan-ignore-next-line */
             imagestring($image, 5, 10, ($line * 18) + 28, $text, $textColor);
         }
 

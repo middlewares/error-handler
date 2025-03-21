@@ -3,14 +3,13 @@ declare(strict_types = 1);
 
 namespace Middlewares\Tests;
 
-use Middlewares\ErrorFormatter\ImageFormatter;
+use Exception;
 use Middlewares\ErrorFormatter\HtmlFormatter;
+use Middlewares\ErrorFormatter\ImageFormatter;
 use Middlewares\ErrorFormatter\JsonFormatter;
 use Middlewares\ErrorFormatter\PlainFormatter;
 use Middlewares\ErrorFormatter\SvgFormatter;
 use Middlewares\ErrorFormatter\XmlFormatter;
-use Exception;
-use Middlewares\ErrorFormatter;
 use Middlewares\ErrorHandler;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
