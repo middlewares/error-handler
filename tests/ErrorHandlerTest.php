@@ -4,7 +4,12 @@ declare(strict_types = 1);
 namespace Middlewares\Tests;
 
 use Exception;
-use Middlewares\ErrorFormatter;
+use Middlewares\ErrorFormatter\HtmlFormatter;
+use Middlewares\ErrorFormatter\ImageFormatter;
+use Middlewares\ErrorFormatter\JsonFormatter;
+use Middlewares\ErrorFormatter\PlainFormatter;
+use Middlewares\ErrorFormatter\SvgFormatter;
+use Middlewares\ErrorFormatter\XmlFormatter;
 use Middlewares\ErrorHandler;
 use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
@@ -13,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 class ErrorHandlerTest extends TestCase
 {
-    public function testMiddleware()
+    public function testMiddleware(): void
     {
         $response = Dispatcher::run([
             new ErrorHandler(),
@@ -27,7 +32,7 @@ class ErrorHandlerTest extends TestCase
         $this->assertStringContainsString('Something went wrong', (string) $response->getBody());
     }
 
-    public function testHttpException()
+    public function testHttpException(): void
     {
         $response = Dispatcher::run([
             new ErrorHandler(),
@@ -39,7 +44,7 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals(404, $response->getStatusCode());
     }
 
-    public function testHttpStatusException()
+    public function testHttpStatusException(): void
     {
         $response = Dispatcher::run([
             new ErrorHandler(),
@@ -56,13 +61,13 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals(418, $response->getStatusCode());
     }
 
-    public function testGifFormatter()
+    public function testGifFormatter(): void
     {
         $request = Factory::createServerRequest('GET', '/');
         $request = $request->withheader('Accept', 'image/gif');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\ImageFormatter()),
+            (new ErrorHandler())->addFormatters(new ImageFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -71,13 +76,13 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals('image/gif', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testHtmlFormatter()
+    public function testHtmlFormatter(): void
     {
         $request = Factory::createServerRequest('GET', '/');
         $request = $request->withheader('Accept', 'text/html');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\HtmlFormatter()),
+            (new ErrorHandler())->addFormatters(new HtmlFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -86,13 +91,13 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals('text/html', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testJpegFormatter()
+    public function testJpegFormatter(): void
     {
         $request = Factory::createServerRequest('GET', '/');
         $request = $request->withheader('Accept', 'image/jpeg');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\ImageFormatter()),
+            (new ErrorHandler())->addFormatters(new ImageFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -101,13 +106,13 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals('image/jpeg', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testJsonFormatter()
+    public function testJsonFormatter(): void
     {
         $request = Factory::createServerRequest('GET', '/');
         $request = $request->withheader('Accept', 'application/json');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\JsonFormatter()),
+            (new ErrorHandler())->addFormatters(new JsonFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -116,13 +121,13 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals('application/json', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testPlainFormatter()
+    public function testPlainFormatter(): void
     {
         $request = Factory::createServerRequest('GET', '/');
         $request = $request->withheader('Accept', 'text/plain');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\PlainFormatter()),
+            (new ErrorHandler())->addFormatters(new PlainFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -131,13 +136,13 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals('text/plain', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testPngFormatter()
+    public function testPngFormatter(): void
     {
         $request = Factory::createServerRequest('GET', '/');
         $request = $request->withheader('Accept', 'image/png');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\ImageFormatter()),
+            (new ErrorHandler())->addFormatters(new ImageFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -146,13 +151,13 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals('image/png', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testSvgFormatter()
+    public function testSvgFormatter(): void
     {
         $request = Factory::createServerRequest('GET', '/');
         $request = $request->withheader('Accept', 'image/svg+xml');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\SvgFormatter()),
+            (new ErrorHandler())->addFormatters(new SvgFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
@@ -161,13 +166,13 @@ class ErrorHandlerTest extends TestCase
         $this->assertEquals('image/svg+xml', $response->getHeaderLine('Content-Type'));
     }
 
-    public function testXmlFormatter()
+    public function testXmlFormatter(): void
     {
         $request = Factory::createServerRequest('GET', '/');
         $request = $request->withheader('Accept', 'text/xml');
 
         $response = Dispatcher::run([
-            (new ErrorHandler())->addFormatters(new ErrorFormatter\XmlFormatter()),
+            (new ErrorHandler())->addFormatters(new XmlFormatter()),
             function ($request) {
                 throw new Exception('Something went wrong');
             },
