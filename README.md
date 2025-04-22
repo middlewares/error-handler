@@ -67,6 +67,38 @@ $errorHandler = new ErrorHandler([
 
 **Note:** If no formatter is found, the first value of the array will be used. In the example above, `HtmlFormatter`.
 
+### How to use a custom response in Production
+
+```php
+class PrettyPage implements StreamFactoryInterface
+{
+    public function createStream(string $content = ''): StreamInterface
+    {
+        return Factory::createStream('<strong>Pretty page</strong>');
+    }
+
+    public function createStreamFromFile(string $filename, string $mode = 'r'): StreamInterface
+    {
+        // This is safe as the Middleware only uses createStream()
+        throw new Exception('Not implemented');
+    }
+
+    public function createStreamFromResource($resource): StreamInterface
+    {
+        // This is safe as the Middleware only uses createStream()
+        throw new Exception('Not implemented');
+    }
+}
+
+
+$errorHandler = new ErrorHandler([
+    new HtmlFormatter(
+        null,
+        new PrettyPage,
+    ),
+]);
+```
+
 ---
 
 Please see [CHANGELOG](CHANGELOG.md) for more information about recent changes and [CONTRIBUTING](CONTRIBUTING.md) for contributing details.
