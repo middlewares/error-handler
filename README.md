@@ -27,6 +27,9 @@ composer require middlewares/error-handler
 use Middlewares\ErrorFormatter;
 use Middlewares\ErrorHandler;
 use Middlewares\Utils\Dispatcher;
+use Monolog\Level;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
 
 // Create a new ErrorHandler instance
 // Any number of formatters can be added. One will be picked based on the Accept
@@ -41,6 +44,10 @@ $errorHandler = new ErrorHandler([
     new ErrorFormatter\XmlFormatter(),
 ]);
 
+// Create logger (optional)
+$logger = new Logger('app');
+$logger->pushHandler(new StreamHandler('path/to/your.log', Level::Warning));
+
 // ErrorHandler should always be the first middleware in the stack!
 $dispatcher = new Dispatcher([
     $errorHandler,
@@ -48,7 +55,7 @@ $dispatcher = new Dispatcher([
     function ($request) {
         throw HttpErrorException::create(404);
     }
-]);
+], $logger);
 
 $request = $serverRequestFactory->createServerRequest('GET', '/');
 $response = $dispatcher->dispatch($request);
@@ -66,6 +73,40 @@ $errorHandler = new ErrorHandler([
 ```
 
 **Note:** If no formatter is found, the first value of the array will be used. In the example above, `HtmlFormatter`.
+
+### How to setup a custom log callback
+
+This allows you to fully customize how you log (level, message, context, etc.) with access to values such as `Throwable` and `ServerRequestInterface` instances.
+
+Example using Monolog:
+
+```php
+use Monolog\Level;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$logger = new Logger('app');
+$logger->pushHandler(new StreamHandler('path/to/your.log', Level::Warning));
+
+$response = Dispatcher::run([
+    (new ErrorHandler(null, $logger))
+        ->logCallback(function (
+            LoggerInterface $logger,
+            Throwable $error,
+            ServerRequestInterface $request
+        ): void {
+            $logger->critical('Uncaught exception', [
+                'message' => $error->getMessage(),
+                'request' => [
+                    'uri' => $request->getUri()->getPath(),
+                ]
+            ]);
+        }),
+    function ($request) {
+        throw new Exception('Something went wrong');
+    },
+]);
+```
 
 ### How to use a custom response for Production
 

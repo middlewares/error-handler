@@ -30,7 +30,8 @@
         "squizlabs/php_codesniffer": "^3",
         "oscarotero/php-cs-fixer-config": "^2",
         "phpstan/phpstan": "^1 || ^2",
-        "laminas/laminas-diactoros": "^2 || ^3"
+        "laminas/laminas-diactoros": "^2 || ^3",
+        "filisko/fake-psr3-logger": "^1.0"
     },
     "autoload": {
         "psr-4": {

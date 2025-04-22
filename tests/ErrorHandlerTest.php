@@ -4,6 +4,7 @@ declare(strict_types = 1);
 namespace Middlewares\Tests;
 
 use Exception;
+use Filisko\FakeLogger;
 use Middlewares\ErrorFormatter\HtmlFormatter;
 use Middlewares\ErrorFormatter\ImageFormatter;
 use Middlewares\ErrorFormatter\JsonFormatter;
@@ -15,6 +16,9 @@ use Middlewares\Utils\Dispatcher;
 use Middlewares\Utils\Factory;
 use Middlewares\Utils\HttpErrorException;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 class ErrorHandlerTest extends TestCase
 {
@@ -59,6 +63,65 @@ class ErrorHandlerTest extends TestCase
         ]);
 
         $this->assertEquals(418, $response->getStatusCode());
+    }
+
+    public function testLoggerException(): void
+    {
+        $logger = new FakeLogger();
+
+        $response = Dispatcher::run([
+            new ErrorHandler(null, $logger),
+            function ($request) {
+                throw new Exception('Something went wrong');
+            },
+        ]);
+
+        $this->assertEquals(500, $response->getStatusCode());
+        $this->assertEquals([[
+            'level' => 'critical',
+            'message' => 'Uncaught exception',
+            'context' => [
+                'message' => 'Something went wrong',
+                'file' => __FILE__,
+                'line' => 75,
+            ]
+        ]], $logger->logs());
+    }
+
+    public function testLoggerExceptionWithCustomCallback(): void
+    {
+        $logger = new FakeLogger();
+
+        $response = Dispatcher::run([
+            (new ErrorHandler(null, $logger))
+                ->logCallback(function (
+                    LoggerInterface $logger,
+                    Throwable $error,
+                    ServerRequestInterface $request
+                ): void {
+                    $logger->critical('Uncaught exception', [
+                        'message' => $error->getMessage(),
+                        'request' => [
+                            'uri' => $request->getUri()->getPath(),
+                        ]
+                    ]);
+                }),
+            function ($request) {
+                throw new Exception('Something went wrong');
+            },
+        ]);
+
+        $this->assertEquals(500, $response->getStatusCode());
+        $this->assertEquals([[
+            'level' => 'critical',
+            'message' => 'Uncaught exception',
+            'context' => [
+                'message' => 'Something went wrong',
+                'request' => [
+                    'uri' => '/',
+                ]
+            ]
+        ]], $logger->logs());
     }
 
     public function testGifFormatter(): void
