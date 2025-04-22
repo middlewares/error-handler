@@ -64,7 +64,7 @@ class ErrorHandler implements MiddlewareInterface
     }
 
     /**
-     * @param callable $callback
+     * Set a custom log callback
      */
     public function logCallback(callable $callback): self
     {
