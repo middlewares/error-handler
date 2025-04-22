@@ -67,7 +67,7 @@ $errorHandler = new ErrorHandler([
 
 **Note:** If no formatter is found, the first value of the array will be used. In the example above, `HtmlFormatter`.
 
-### How to use a custom response in Production
+### How to use a custom response for Production
 
 ```php
 class PrettyPage implements StreamFactoryInterface
