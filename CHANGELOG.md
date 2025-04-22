@@ -4,6 +4,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.2.0] - 2025-04-22
+### Added
+- Support for [PSR-3 Logger](https://github.com/php-fig/log). Example using [Monolog](https://github.com/Seldaek/monolog):
+
+With default logging:
+```php
+use Monolog\Level;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$logger = new Logger('app');
+$logger->pushHandler(new StreamHandler('path/to/your.log', Level::Warning));
+
+$response = Dispatcher::run([
+    new ErrorHandler(null, $logger),
+    function ($request) {
+        throw new Exception('Something went wrong');
+    },
+]);
+
+```
+With a custom log callback:
+```php
+use Monolog\Level;
+use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
+$logger = new Logger('app');
+$logger->pushHandler(new StreamHandler('path/to/your.log', Level::Warning));
+
+$response = Dispatcher::run([
+    (new ErrorHandler(null, $logger))
+        ->logCallback(function (
+            LoggerInterface $logger,
+            Throwable $error,
+            ServerRequestInterface $request
+        ): void {
+            $logger->critical('Uncaught exception', [
+                'message' => $error->getMessage(),
+                'request' => [
+                    'uri' => $request->getUri()->getPath(),
+                ]
+            ]);
+        }),
+    function ($request) {
+        throw new Exception('Something went wrong');
+    },
+]);
+```
+
 ## [3.1.0] - 2025-03-21
 ### Fixed
 - Support for PHP typing.
@@ -117,6 +167,7 @@ First version
 
 [#9]: https://github.com/middlewares/error-handler/issues/9
 
+[3.2.0]: https://github.com/middlewares/error-handler/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/middlewares/error-handler/compare/v3.0.2...v3.1.0
 [3.0.2]: https://github.com/middlewares/error-handler/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/middlewares/error-handler/compare/v3.0.0...v3.0.1
