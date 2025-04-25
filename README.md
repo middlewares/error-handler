@@ -67,7 +67,30 @@ $errorHandler = new ErrorHandler([
 
 **Note:** If no formatter is found, the first value of the array will be used. In the example above, `HtmlFormatter`.
 
+### How to log the error and delegate and delegate the formatting to the middleware
+
+Please note that the following snippet must go even before error-hander's middleware.
+
+```php
+public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+{
+    try {
+        return $handler->handle($request);
+    } catch (Throwable $exception) {
+        $this->logger->critical('Uncaught {error}', [
+            'error' => $exception->getMessage(),
+            'exception' => $exception, // If you use Monolog, this is correct
+        ]);
+
+        // leave it for the middleware
+        throw $exception;
+    }
+}
+```
+
 ### How to use a custom response for Production
+
+This snippet might come handy when you want to customize your response in production.
 
 ```php
 class PrettyPage implements StreamFactoryInterface
