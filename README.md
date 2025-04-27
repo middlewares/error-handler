@@ -69,7 +69,7 @@ $errorHandler = new ErrorHandler([
 
 ### How to log the error and delegate the formatting to the middleware
 
-Please note that the following snippet must go even before error-hander's middleware.
+Please note that the following snippet must go even before error-hander's middleware, which usually goes first.
 
 ```php
 public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
