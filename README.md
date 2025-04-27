@@ -67,7 +67,7 @@ $errorHandler = new ErrorHandler([
 
 **Note:** If no formatter is found, the first value of the array will be used. In the example above, `HtmlFormatter`.
 
-### How to log the error and delegate and delegate the formatting to the middleware
+### How to log the error and delegate the formatting to the middleware
 
 Please note that the following snippet must go even before error-hander's middleware.
 
